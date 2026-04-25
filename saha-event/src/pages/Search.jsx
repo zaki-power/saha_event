@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import SalleCard from '../components/salles/SalleCard'
-import { FaSliders, FaSearch } from 'react-icons/fa'
+
+// Updated to fa6 and renamed icons
+import { FaSliders, FaMagnifyingGlass } from 'react-icons/fa6'
 
 const WILAYAS = [
   "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
@@ -127,7 +129,7 @@ export default function Search() {
                 />
               </div>
 
-              {/* Amenities - Display only for now */}
+              {/* Amenities */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Équipements</label>
                 <div className="space-y-2">
@@ -176,8 +178,8 @@ export default function Search() {
             </div>
           ) : (
             <div className="text-center py-20 bg-gray-50 rounded-3xl">
-              <div className="text-6xl mb-4 inline-block">
-                <FaSearch />
+              <div className="text-6xl mb-4 inline-block text-gray-300">
+                <FaMagnifyingGlass />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">Aucun résultat trouvé</h3>
               <p className="text-gray-600">Essayez de modifier vos filtres pour voir plus d'options.</p>

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import Home from './pages/Home'
@@ -12,6 +13,7 @@ import Search from './pages/Search'
 import SalleDetail from './pages/SalleDetail'
 import Dashboard from './pages/Dashboard'
 import MyReservations from './pages/MyReservations'
+import AdminDashboard from './pages/AdminDashboard'
 
 export default function App() {
   return (
@@ -31,6 +33,9 @@ export default function App() {
           } />
           <Route path="/dashboard/reservations" element={
             <ProtectedRoute><MyReservations /></ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <AdminRoute><AdminDashboard /></AdminRoute>
           } />
         </Routes>
         <Footer />

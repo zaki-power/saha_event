@@ -2,7 +2,17 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import SalleCard from '../components/salles/SalleCard'
-import { FaRing, FaCake, FaHandshake, FaStar, FaSearch, FaCalendar, FaPartyhorn } from 'react-icons/fa'
+
+// Corrected imports for Font Awesome 6
+import { 
+  FaRing, 
+  FaCakeCandles,      // Updated from FaCake
+  FaHandshake, 
+  FaStar, 
+  FaMagnifyingGlass,  // Updated from FaSearch
+  FaCalendarDays,     // Updated from FaCalendar
+  FaChampagneGlasses  // Replacement for FaPartyhorn
+} from 'react-icons/fa6'
 
 const WILAYAS = [
   "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
@@ -56,7 +66,7 @@ export default function Home() {
   const handleSearch = (e) => {
     e.preventDefault()
     const query = new URLSearchParams({
-      city: searchParams.wilaya, // mapping wilaya to city as per search logic
+      city: searchParams.wilaya,
       type: searchParams.type,
       date: searchParams.date,
       guests: searchParams.guests
@@ -146,7 +156,7 @@ export default function Home() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { name: 'Mariage', icon: FaRing },
-            { name: 'Anniversaire', icon: FaCake },
+            { name: 'Anniversaire', icon: FaCakeCandles }, // Updated name
             { name: 'Conférence', icon: FaHandshake },
             { name: 'Soirée', icon: FaStar }
           ].map((type, idx) => {
@@ -165,7 +175,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Salles (Placeholder for now) */}
+      {/* Featured Salles */}
       <section className="py-20 bg-gray-50 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-12">
@@ -205,9 +215,9 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-gray-800 mb-16">Comment ça marche ?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { title: "Recherchez", desc: "Filtrez par ville, budget et capacité", icon: FaSearch },
-              { title: "Réservez", desc: "Réservez en ligne en quelques clics", icon: FaCalendar },
-              { title: "Célébrez", desc: "Profitez de votre moment magique", icon: FaPartyhorn }
+              { title: "Recherchez", desc: "Filtrez par ville, budget et capacité", icon: FaMagnifyingGlass }, // Updated
+              { title: "Réservez", desc: "Réservez en ligne en quelques clics", icon: FaCalendarDays },       // Updated
+              { title: "Célébrez", desc: "Profitez de votre moment magique", icon: FaChampagneGlasses }    // Updated
             ].map((step, idx) => {
               const StepIcon = step.icon
               return (
