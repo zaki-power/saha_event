@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaMobileAlt, FaCamera, FaBriefcase } from 'react-icons/fa'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -99,12 +100,14 @@ export default function Contact() {
           {/* Info Panel */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-primary rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">📍</div>
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">
+                <FaMapMarkerAlt />
+              </div>
               <h2 className="text-2xl font-bold mb-8">Informations</h2>
               
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
-                  <span className="text-2xl">🏢</span>
+                  <FaMapMarkerAlt className="text-2xl mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-bold">Adresse</h3>
                     <p className="text-purple-100">Cité 1200 Logements, Alger, Algérie</p>
@@ -112,7 +115,7 @@ export default function Contact() {
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <span className="text-2xl">📞</span>
+                  <FaPhone className="text-2xl mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-bold">Téléphone</h3>
                     <p className="text-purple-100">+213 (0) 555 12 34 56</p>
@@ -120,7 +123,7 @@ export default function Contact() {
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <span className="text-2xl">📧</span>
+                  <FaEnvelope className="text-2xl mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-bold">Email</h3>
                     <p className="text-purple-100">contact@saha-event.dz</p>
@@ -129,9 +132,15 @@ export default function Contact() {
               </div>
 
               <div className="mt-12 pt-8 border-t border-purple-400 flex space-x-4">
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition">📱</div>
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition">📸</div>
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition">💼</div>
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                  <FaMobileAlt />
+                </div>
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                  <FaCamera />
+                </div>
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                  <FaBriefcase />
+                </div>
               </div>
             </div>
 

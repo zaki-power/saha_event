@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import SalleCard from '../components/salles/SalleCard'
+import { FaRing, FaCake, FaHandshake, FaStar, FaSearch, FaCalendar, FaPartyhorn } from 'react-icons/fa'
 
 const WILAYAS = [
   "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
@@ -66,12 +67,12 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-primary py-20 lg:py-32 px-4 overflow-hidden">
+      <section className="relative moving-bg py-20 lg:py-32 px-4 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 animate-fade-in">
+          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 animate-fade-in animate-slide-in-up">
             Trouvez la salle parfaite pour votre événement
           </h1>
-          <p className="text-purple-100 text-lg lg:text-xl mb-12 max-w-2xl mx-auto">
+          <p className="text-purple-100 text-lg lg:text-xl mb-12 max-w-2xl mx-auto animate-slide-in-up" style={{animationDelay: '0.2s'}}>
             Célébrez vos moments inoubliables dans les plus belles salles d'Algérie.
           </p>
 
@@ -143,19 +144,24 @@ export default function Home() {
       <section className="py-20 px-4 max-w-7xl mx-auto w-full">
         <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">Types d'Événements</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {["Mariage", "Anniversaire", "Conférence", "Soirée"].map((type) => (
-            <div key={type} className="group cursor-pointer">
-              <div className="bg-gray-100 rounded-2xl p-8 text-center transition-all duration-300 group-hover:bg-primary group-hover:shadow-xl">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm group-hover:scale-110 transition-transform">
-                  {type === 'Mariage' && '💍'}
-                  {type === 'Anniversaire' && '🎂'}
-                  {type === 'Conférence' && '🤝'}
-                  {type === 'Soirée' && '✨'}
+          {[
+            { name: 'Mariage', icon: FaRing },
+            { name: 'Anniversaire', icon: FaCake },
+            { name: 'Conférence', icon: FaHandshake },
+            { name: 'Soirée', icon: FaStar }
+          ].map((type, idx) => {
+            const IconComponent = type.icon
+            return (
+              <div key={type.name} className="group cursor-pointer animate-slide-in-up" style={{animationDelay: `${idx * 0.1}s`}}>
+                <div className="bg-gray-100 rounded-2xl p-8 text-center transition-all duration-300 group-hover:bg-primary group-hover:shadow-xl group-hover:scale-105 transform group-hover:animate-pulse-glow">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm group-hover:scale-110 transition-transform group-hover:animate-spin-slow">
+                    <IconComponent className="text-primary group-hover:text-white" />
+                  </div>
+                  <h3 className="font-bold text-gray-800 group-hover:text-white">{type.name}</h3>
                 </div>
-                <h3 className="font-bold text-gray-800 group-hover:text-white">{type}</h3>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
@@ -199,19 +205,24 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-gray-800 mb-16">Comment ça marche ?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { title: "Recherchez", desc: "Filtrez par ville, budget et capacité", icon: "🔍" },
-              { title: "Réservez", desc: "Réservez en ligne en quelques clics", icon: "📅" },
-              { title: "Célébrez", desc: "Profitez de votre moment magique", icon: "🎉" }
-            ].map((step, idx) => (
-              <div key={idx} className="relative">
-                <div className="text-5xl mb-6">{step.icon}</div>
-                <h3 className="text-xl font-bold mb-2 text-primary">{step.title}</h3>
-                <p className="text-gray-600">{step.desc}</p>
-                {idx < 2 && (
-                  <div className="hidden lg:block absolute top-10 right-[-20%] w-20 border-t-2 border-dashed border-gray-300"></div>
-                )}
-              </div>
-            ))}
+              { title: "Recherchez", desc: "Filtrez par ville, budget et capacité", icon: FaSearch },
+              { title: "Réservez", desc: "Réservez en ligne en quelques clics", icon: FaCalendar },
+              { title: "Célébrez", desc: "Profitez de votre moment magique", icon: FaPartyhorn }
+            ].map((step, idx) => {
+              const StepIcon = step.icon
+              return (
+                <div key={idx} className="relative group animate-slide-in-up" style={{animationDelay: `${idx * 0.15}s`}}>
+                  <div className="text-5xl mb-6 text-primary group-hover:text-accent transition-colors duration-300 group-hover:scale-110 transform inline-block group-hover:animate-float">
+                    <StepIcon />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-primary group-hover:scale-105 transition-transform">{step.title}</h3>
+                  <p className="text-gray-600">{step.desc}</p>
+                  {idx < 2 && (
+                    <div className="hidden lg:block absolute top-10 right-[-20%] w-20 border-t-2 border-dashed border-gray-300"></div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import ReservationForm from '../components/reservation/ReservationForm'
+import { FaMapMarkerAlt, FaCheck } from 'react-icons/fa'
 
 export default function SalleDetail() {
   const { id } = useParams()
@@ -55,7 +56,7 @@ export default function SalleDetail() {
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">{salle.name}</h1>
               <p className="text-gray-500 flex items-center text-lg">
-                <span className="mr-2">📍</span> {salle.city}
+                <FaMapMarkerAlt className="mr-2" /> {salle.city}
               </p>
             </div>
             <div className="text-right">
@@ -91,7 +92,7 @@ export default function SalleDetail() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {(salle.amenities || ["WiFi", "Climatisation", "Parking", "Catering", "Scène", "Sonorisation"]).map(item => (
                 <div key={item} className="flex items-center text-gray-600">
-                  <span className="text-accent mr-3">✔</span> {item}
+                  <FaCheck className="text-accent mr-3" /> {item}
                 </div>
               ))}
             </div>

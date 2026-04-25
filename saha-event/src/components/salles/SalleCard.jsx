@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { FaMapMarkerAlt, FaUsers, FaStar } from 'react-icons/fa'
 
 export default function SalleCard({ salle }) {
   const { id, name, city, price_per_day, capacity, images, rating = 4.5 } = salle
@@ -21,19 +22,19 @@ export default function SalleCard({ salle }) {
       <div className="p-4">
         <div className="flex justify-between items-start mb-1">
           <h3 className="font-bold text-gray-800 text-lg group-hover:text-primary transition line-clamp-1">{name}</h3>
-          <div className="flex items-center text-accent">
-            <span className="text-sm font-bold mr-1">{rating}</span>
-            <span>⭐</span>
+          <div className="flex items-center text-accent gap-1">
+            <span className="text-sm font-bold">{rating}</span>
+            <FaStar className="text-accent" />
           </div>
         </div>
         
         <p className="text-gray-500 text-sm mb-3 flex items-center">
-          <span className="mr-1">📍</span> {city}
+          <FaMapMarkerAlt className="mr-1.5" /> {city}
         </p>
         
         <div className="flex items-center justify-between pt-3 border-t border-gray-50">
           <div className="flex items-center text-gray-600 text-sm">
-            <span className="mr-1">👥</span>
+            <FaUsers className="mr-1.5" />
             <span>Jusqu'à {capacity} pers.</span>
           </div>
           <span className="text-primary font-semibold text-sm">Détails →</span>
