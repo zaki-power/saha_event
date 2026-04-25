@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import SalleCard from '../components/salles/SalleCard'
-import VantaBirds from '../components/VantaBirds'
 import { FaRing, FaCake, FaHandshake, FaStar, FaSearch, FaCalendar, FaPartyhorn } from 'react-icons/fa'
 
 const WILAYAS = [
@@ -68,8 +67,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-primary py-20 lg:py-32 px-4 overflow-hidden h-screen lg:h-auto flex items-center">
-        <VantaBirds />
+      <section className="relative hero-gradient py-20 lg:py-32 px-4 overflow-hidden h-screen lg:h-auto flex items-center">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 animate-fade-in animate-slide-in-up">
             Trouvez la salle parfaite pour votre événement
