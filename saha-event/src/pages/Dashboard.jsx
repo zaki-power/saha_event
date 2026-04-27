@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import ReservationCard from '../components/reservation/ReservationCard'
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [stats, setStats] = useState({ total: 0, upcoming: 0, pending: 0 })
   const [recentReservations, setRecentReservations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -14,14 +15,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      fetchDashboardData()
+      checkRoleAndFetchData()
     }
   }, [user])
 
-  const fetchDashboardData = async () => {
+  const checkRoleAndFetchData = async () => {
     setLoading(true)
     try {
-      // Fetch reservations with salle details
+      // 1. Check role first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      
+      if (profile?.role === 'admin') {
+        navigate('/admin', { replace: true })
+        return
+      }
+
+      // 2. If not admin, fetch regular dashboard data
       const { data, error } = await supabase
         .from('reservations')
         .select('*, salles(name, images)')

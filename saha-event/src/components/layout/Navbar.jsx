@@ -20,7 +20,7 @@ export default function Navbar() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, avatar_url, role')
         .eq('id', user.id)
         .single()
       
@@ -31,6 +31,7 @@ export default function Navbar() {
     }
   }
 
+  const isAdmin = profile?.role === 'admin'
   const fullName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${fullName}&background=6B21A8&color=fff`
 
@@ -45,12 +46,24 @@ export default function Navbar() {
 
           {/* Center Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-primary font-medium">Accueil</Link>
-            {user && (
-              <Link to="/dashboard/reservations" className="text-gray-600 hover:text-primary font-medium">Mes réservations</Link>
+            {!isAdmin ? (
+              <>
+                <Link to="/" className="text-gray-600 hover:text-primary font-medium">Accueil</Link>
+                {user && (
+                  <Link to="/dashboard/reservations" className="text-gray-600 hover:text-primary font-medium">Mes réservations</Link>
+                )}
+                <Link to="/about" className="text-gray-600 hover:text-primary font-medium">À propos</Link>
+                <Link to="/contact" className="text-gray-600 hover:text-primary font-medium">Contact</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/admin" className="text-primary font-bold flex items-center bg-primary bg-opacity-5 px-4 py-2 rounded-xl">
+                  <span className="mr-2">🛡️</span> Gestion des Réservations
+                </Link>
+                {/* Admins can still see the home if they need to, but we prioritize the dashboard */}
+                <Link to="/" className="text-gray-600 hover:text-primary font-medium">Voir le site</Link>
+              </>
             )}
-            <Link to="/about" className="text-gray-600 hover:text-primary font-medium">À propos</Link>
-            <Link to="/contact" className="text-gray-600 hover:text-primary font-medium">Contact</Link>
           </div>
 
           {/* Right Section */}
@@ -72,6 +85,15 @@ export default function Navbar() {
                 {/* Dropdown Menu */}
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 z-50 animate-fade-in">
+                    {isAdmin && (
+                      <Link 
+                        to="/admin" 
+                        className="block px-4 py-2 text-primary font-bold hover:bg-gray-50 md:hidden"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        🛡️ Panel Admin
+                      </Link>
+                    )}
                     <Link 
                       to="/dashboard" 
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary"
