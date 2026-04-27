@@ -49,6 +49,7 @@ export default function Navbar() {
             {!isAdmin ? (
               <>
                 <Link to="/" className="text-gray-600 hover:text-primary font-medium">Accueil</Link>
+                <Link to="/search" className="text-gray-600 hover:text-primary font-medium">Explorer</Link>
                 {user && (
                   <Link to="/dashboard/reservations" className="text-gray-600 hover:text-primary font-medium">Mes réservations</Link>
                 )}

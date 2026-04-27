@@ -12,35 +12,8 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
     eventType: '',
     date: '',
     guests: '',
-    notes: '',
-    receipt: null
+    notes: ''
   })
-
-  const uploadReceipt = async (file, userId, reservationId) => {
-    const { data, error } = await supabase.storage
-      .from('receipts')
-      .upload(`${userId}/${reservationId}.pdf`, file, {
-        contentType: 'application/pdf',
-        upsert: false
-      })
-    if (error) throw error
-    return data.path
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        alert('Seuls les fichiers PDF sont acceptés.')
-        return
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Le fichier est trop volumineux (max 5MB).')
-        return
-      }
-      setFormData({ ...formData, receipt: file })
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -51,19 +24,7 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
 
     setSubmitting(true)
     try {
-      // 1. Create the reservation record first to get an ID if needed, 
-      // but here we use a timestamp for the filename as per Phase 6.6 logic 
-      // or we can use the requested pattern in Phase 7.
-      
-      const reservationId = Date.now() // Temporary ID for filename
-      const filePath = await uploadReceipt(formData.receipt, user.id, reservationId)
-
-      // 2. Get Public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('receipts')
-        .getPublicUrl(filePath)
-
-      // 3. Insert into reservations table
+      // 1. Insert into reservations table without receipt_url
       const { error: reserveError } = await supabase
         .from('reservations')
         .insert({
@@ -73,14 +34,13 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
           event_date: formData.date,
           guests_count: parseInt(formData.guests),
           notes: formData.notes,
-          receipt_url: publicUrl,
           total_price: pricePerDay,
           status: 'pending'
         })
 
       if (reserveError) throw reserveError
 
-      alert('Réservation envoyée avec succès !')
+      alert('Demande de réservation envoyée ! Un administrateur va l\'examiner.')
       navigate('/dashboard/reservations')
     } catch (err) {
       alert(err.message || 'Erreur lors de la réservation')
@@ -130,25 +90,27 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Notes (Optionnel)</label>
+        <textarea 
+          placeholder="Détails supplémentaires..."
+          className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none min-h-[100px]"
+          value={formData.notes}
+          onChange={(e) => setFormData({...formData, notes: e.target.value})}
+        ></textarea>
+      </div>
+
       <div className="pt-4 border-t border-dashed border-gray-100 mt-6">
         <div className="flex justify-between items-center mb-4">
           <span className="text-gray-500">Total estimé</span>
           <span className="text-2xl font-bold text-primary">{pricePerDay} DA</span>
         </div>
         
-        <div className="bg-yellow-50 p-4 rounded-xl mb-4 border border-yellow-100">
-          <p className="text-xs text-yellow-700 font-medium leading-relaxed">
-            💡 Veuillez joindre le reçu de paiement CCP pour confirmer votre réservation. (Format PDF, max 5MB)
+        <div className="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-100">
+          <p className="text-xs text-blue-700 font-medium leading-relaxed">
+            ℹ️ Une fois votre demande confirmée par l'administrateur, vous pourrez uploader votre reçu de paiement.
           </p>
         </div>
-
-        <input 
-          type="file" 
-          accept=".pdf"
-          required
-          onChange={handleFileChange}
-          className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-opacity-90 mb-6"
-        />
       </div>
 
       <button 
@@ -156,7 +118,7 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
         disabled={submitting}
         className={`w-full bg-accent text-white font-bold py-4 rounded-xl shadow-xl hover:bg-opacity-90 transition transform active:scale-95 ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
       >
-        {submitting ? 'Traitement...' : 'Confirmer la réservation'}
+        {submitting ? 'Traitement...' : 'Envoyer la demande'}
       </button>
     </form>
   )

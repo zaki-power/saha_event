@@ -56,7 +56,11 @@ export default function MyReservations() {
       ) : reservations.length > 0 ? (
         <div className="grid gap-6">
           {reservations.map((res) => (
-            <ReservationCard key={res.id} reservation={res} />
+            <ReservationCard 
+              key={res.id} 
+              reservation={res} 
+              onUpdate={fetchReservations} 
+            />
           ))}
         </div>
       ) : (
