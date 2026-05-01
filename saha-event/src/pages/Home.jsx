@@ -2,47 +2,61 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import SalleCard from '../components/salles/SalleCard'
-import VantaBirds from '../components/VantaBirds'
+import SearchForm from '../components/home/SearchForm'
 
-// Corrected imports for Font Awesome 6
+// Imports for Font Awesome 6
 import { 
   FaRing, 
-  FaCakeCandles,      // Updated from FaCake
+  FaCakeCandles,
   FaHandshake, 
   FaStar, 
-  FaMagnifyingGlass,  // Updated from FaSearch
-  FaCalendarDays,     // Updated from FaCalendar
-  FaChampagneGlasses  // Replacement for FaPartyhorn
+  FaMagnifyingGlass,
+  FaCalendarDays,
+  FaChampagneGlasses,
+  FaArrowDown,
+  FaUsers,
+  FaCheck,
+  FaGem
 } from 'react-icons/fa6'
 
-const WILAYAS = [
-  "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
-  "09 Blida", "10 Bouira", "11 Tamanrasset", "12 Tébessa", "13 Tlemcen", "14 Tiaret", "15 Tizi Ouzou", "16 Alger",
-  "17 Djelfa", "18 Jijel", "19 Sétif", "20 Saïda", "21 Skikda", "22 Sidi Bel Abbès", "23 Annaba", "24 Guelma",
-  "25 Constantine", "26 Médéa", "27 Mostaganem", "28 M'Sila", "29 Mascara", "30 Ouargla", "31 Oran", "32 El Bayadh",
-  "33 Illizi", "34 Bordj Bou Arreridj", "35 Boumerdès", "36 El Tarf", "37 Tindouf", "38 Tissemsilt", "39 El Oued",
-  "40 Khenchela", "41 Souk Ahras", "42 Tipaza", "43 Mila", "44 Aïn Defla", "45 Naâma", "46 Aïn Témouchent", "47 Ghardaïa",
-  "48 Relizane", "49 El M'Ghair", "50 El Meniaa", "51 Ouled Djellal", "52 Bordj Baji Mokhtar", "53 Béni Abbès",
-  "54 Timimoun", "55 Touggourt", "56 Djanet", "57 In Salah", "58 In Guezzam"
+const EVENT_CATEGORIES = [
+  { 
+    name: 'Mariage', 
+    icon: FaRing,
+    image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80'
+  },
+  { 
+    name: 'Anniversaire', 
+    icon: FaCakeCandles,
+    image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80'
+  },
+  { 
+    name: 'Conférence', 
+    icon: FaHandshake,
+    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80'
+  },
+  { 
+    name: 'Soirée', 
+    icon: FaStar,
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80'
+  }
 ]
-
-const EVENT_TYPES = ["Mariage", "Anniversaire", "Conférence", "Soirée", "Autre"]
 
 export default function Home() {
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useState({
-    wilaya: '',
-    type: '',
-    date: '',
-    guests: ''
-  })
 
   const [featuredSalles, setFeaturedSalles] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [stats, setStats] = useState({
+    salles: 0,
+    events: 0,
+    wilayas: 58,
+    satisfaction: 99
+  })
 
   useEffect(() => {
     fetchFeaturedSalles()
+    fetchStats()
   }, [])
 
   const fetchFeaturedSalles = async () => {
@@ -58,183 +72,209 @@ export default function Home() {
       setFeaturedSalles(data || [])
     } catch (err) {
       console.error('Error fetching featured salles:', err)
-      setError('Impossible de charger les salles en vedette.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSearch = (e) => {
-    e.preventDefault()
+  const fetchStats = async () => {
+    try {
+      const { data: sallesData, error: sallesError } = await supabase
+        .from('salles')
+        .select('count', { count: 'exact' })
+      
+      const { data: reservationsData, error: reservationsError } = await supabase
+        .from('reservations')
+        .select('count', { count: 'exact' })
+      
+      if (!sallesError && sallesData) {
+        setStats(prev => ({...prev, salles: sallesData.length || 500}))
+      }
+      if (!reservationsError && reservationsData) {
+        setStats(prev => ({...prev, events: reservationsData.length || 10000}))
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err)
+    }
+  }
+
+  const handleSearch = (params) => {
     const query = new URLSearchParams({
-      city: searchParams.wilaya,
-      type: searchParams.type,
-      date: searchParams.date,
-      guests: searchParams.guests
+      city: params.wilaya,
+      type: params.type,
+      date: params.date,
+      guests: params.guests
     }).toString()
     navigate(`/search?${query}`)
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-primary">
       {/* Hero Section */}
-      <section className="relative bg-primary py-20 lg:py-32 px-4 overflow-hidden h-screen lg:h-auto flex items-center">
-        <VantaBirds />
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 animate-fade-in animate-slide-in-up">
-            Trouvez la salle parfaite pour votre événement
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 pb-20">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 animate-gradient" style={{
+          background: 'linear-gradient(135deg, #1a0533, #6B21A8, #1a0533)',
+          backgroundSize: '400% 400%'
+        }}></div>
+
+        {/* Floating decorative circles */}
+        <div className="absolute top-20 right-10 w-72 h-72 bg-accent-pink rounded-full opacity-10 blur-3xl animate-float"></div>
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-primary-mid rounded-full opacity-10 blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-accent rounded-full opacity-5 blur-3xl animate-float" style={{animationDelay: '4s'}}></div>
+
+        {/* Content */}
+        <div className="max-w-7xl mx-auto text-center relative z-10 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold gradient-text mb-6 animate-fade-in-up">
+            Trouvez la Salle Parfaite pour Votre Grand Jour
           </h1>
-          <p className="text-purple-100 text-lg lg:text-xl mb-12 max-w-2xl mx-auto animate-slide-in-up" style={{animationDelay: '0.2s'}}>
-            Célébrez vos moments inoubliables dans les plus belles salles d'Algérie.
+          <p className="text-text-light/80 text-lg lg:text-xl mb-12 max-w-2xl mx-auto animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+            Découvrez les plus belles salles d'Algérie pour célébrer vos moments inoubliables
           </p>
 
-          {/* Search Bar */}
-          <div className="bg-white p-4 rounded-xl shadow-2xl max-w-5xl mx-auto">
-            <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="flex flex-col text-left">
-                <label className="text-xs font-semibold text-gray-500 uppercase ml-2 mb-1">Wilaya</label>
-                <select 
-                  className="w-full p-2 border-r border-gray-100 focus:outline-none bg-transparent"
-                  value={searchParams.wilaya}
-                  onChange={(e) => setSearchParams({...searchParams, wilaya: e.target.value})}
-                  required
-                >
-                  <option value="">Sélectionner</option>
-                  {WILAYAS.map(w => <option key={w} value={w}>{w}</option>)}
-                </select>
-              </div>
+          {/* Search Bar - Glassmorphism */}
+          <SearchForm onSubmit={handleSearch} variant="hero" />
 
-              <div className="flex flex-col text-left">
-                <label className="text-xs font-semibold text-gray-500 uppercase ml-2 mb-1">Type</label>
-                <select 
-                  className="w-full p-2 border-r border-gray-100 focus:outline-none bg-transparent"
-                  value={searchParams.type}
-                  onChange={(e) => setSearchParams({...searchParams, type: e.target.value})}
-                  required
-                >
-                  <option value="">Événement</option>
-                  {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-
-              <div className="flex flex-col text-left">
-                <label className="text-xs font-semibold text-gray-500 uppercase ml-2 mb-1">Date</label>
-                <input 
-                  type="date"
-                  className="w-full p-2 border-r border-gray-100 focus:outline-none"
-                  value={searchParams.date}
-                  onChange={(e) => setSearchParams({...searchParams, date: e.target.value})}
-                />
-              </div>
-
-              <div className="flex flex-col text-left">
-                <label className="text-xs font-semibold text-gray-500 uppercase ml-2 mb-1">Invités</label>
-                <input 
-                  type="number"
-                  placeholder="Nombre"
-                  className="w-full p-2 focus:outline-none"
-                  value={searchParams.guests}
-                  onChange={(e) => setSearchParams({...searchParams, guests: e.target.value})}
-                />
-              </div>
-
-              <button 
-                type="submit"
-                className="bg-accent text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition duration-300 transform hover:scale-105"
-              >
-                Rechercher
-              </button>
-            </form>
+          {/* Scroll indicator */}
+          <div className="flex justify-center animate-bounce mt-8">
+            <FaArrowDown className="text-accent text-2xl" />
           </div>
         </div>
-        {/* Background Decor */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-accent rounded-full opacity-10 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-purple-400 rounded-full opacity-10 blur-3xl"></div>
       </section>
 
       {/* Event Types Section */}
-      <section className="py-20 px-4 max-w-7xl mx-auto w-full">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">Types d'Événements</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { name: 'Mariage', icon: FaRing },
-            { name: 'Anniversaire', icon: FaCakeCandles }, // Updated name
-            { name: 'Conférence', icon: FaHandshake },
-            { name: 'Soirée', icon: FaStar }
-          ].map((type, idx) => {
-            const IconComponent = type.icon
-            return (
-              <div key={type.name} className="group cursor-pointer animate-slide-in-up" style={{animationDelay: `${idx * 0.1}s`}}>
-                <div className="bg-gray-100 rounded-2xl p-8 text-center transition-all duration-300 group-hover:bg-primary group-hover:shadow-xl group-hover:scale-105 transform group-hover:animate-pulse-glow">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm group-hover:scale-110 transition-transform group-hover:animate-spin-slow">
-                    <IconComponent className="text-primary group-hover:text-white" />
+      <section className="section-padding bg-primary">
+        <div className="container-custom">
+          <h2 className="text-4xl lg:text-5xl font-bold gradient-text text-center mb-4">Types d'Événements</h2>
+          <p className="text-text-light/60 text-center mb-16 max-w-2xl mx-auto">Explorez nos catégories pour trouver la salle idéale</p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {EVENT_CATEGORIES.map((type, idx) => (
+              <div 
+                key={type.name} 
+                className="group cursor-pointer animate-fade-in-up"
+                style={{animationDelay: `${idx * 0.1}s`}}
+              >
+                <div className="relative rounded-3xl overflow-hidden h-64 shadow-2xl shadow-primary-mid/20 hover:shadow-accent/40 transition-all duration-300 group-hover:scale-105">
+                  {/* Background image */}
+                  <img 
+                    src={type.image}
+                    alt={type.name}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Dark overlay */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300"></div>
+                  
+                  {/* Content */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <div className="text-5xl mb-4 text-accent group-hover:scale-110 transition-transform duration-300">
+                      <type.icon />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white">{type.name}</h3>
                   </div>
-                  <h3 className="font-bold text-gray-800 group-hover:text-white">{type.name}</h3>
                 </div>
               </div>
-            )
-          })}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Featured Salles */}
-      <section className="py-20 bg-gray-50 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-12">
+      {/* Featured Salles Section */}
+      <section className="section-padding bg-primary">
+        <div className="container-custom">
+          <div className="flex justify-between items-end mb-16">
             <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Salles Populaires</h2>
-              <p className="text-gray-600">Découvrez nos salles les plus réservées</p>
+              <h2 className="text-4xl lg:text-5xl font-bold gradient-text mb-2">Nos Salles Populaires</h2>
+              <div className="w-20 h-1 bg-accent rounded-full"></div>
             </div>
-            <button onClick={() => navigate('/search')} className="text-primary font-semibold hover:underline">
+            <button 
+              onClick={() => navigate('/search')} 
+              className="text-accent font-semibold hover:text-accent-pink transition-colors duration-300 text-lg hidden sm:block"
+            >
               Voir tout →
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
               [1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
-                  <div className="h-48 bg-gray-200"></div>
-                  <div className="p-4">
-                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
+                <div key={i} className="glass-card-lg h-80 animate-pulse"></div>
               ))
             ) : featuredSalles.length > 0 ? (
               featuredSalles.map((salle) => (
                 <SalleCard key={salle.id} salle={salle} />
               ))
             ) : (
-              <p className="col-span-3 text-center text-gray-500">Aucune salle disponible pour le moment.</p>
+              <div className="col-span-full text-center py-12">
+                <p className="text-text-light/60 text-lg">Aucune salle disponible pour le moment.</p>
+              </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* 3 Steps Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-16">Comment ça marche ?</h2>
+      {/* How It Works Section */}
+      <section className="section-padding bg-gradient-to-br from-primary to-primary-mid">
+        <div className="container-custom">
+          <h2 className="text-4xl lg:text-5xl font-bold gradient-text text-center mb-16">Comment Ça Marche ?</h2>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { title: "Recherchez", desc: "Filtrez par ville, budget et capacité", icon: FaMagnifyingGlass }, // Updated
-              { title: "Réservez", desc: "Réservez en ligne en quelques clics", icon: FaCalendarDays },       // Updated
-              { title: "Célébrez", desc: "Profitez de votre moment magique", icon: FaChampagneGlasses }    // Updated
-            ].map((step, idx) => {
-              const StepIcon = step.icon
-              return (
-                <div key={idx} className="relative group animate-slide-in-up" style={{animationDelay: `${idx * 0.15}s`}}>
-                  <div className="text-5xl mb-6 text-primary group-hover:text-accent transition-colors duration-300 group-hover:scale-110 transform inline-block group-hover:animate-float">
-                    <StepIcon />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-primary group-hover:scale-105 transition-transform">{step.title}</h3>
-                  <p className="text-gray-600">{step.desc}</p>
-                  {idx < 2 && (
-                    <div className="hidden lg:block absolute top-10 right-[-20%] w-20 border-t-2 border-dashed border-gray-300"></div>
-                  )}
+              { title: "Recherchez", desc: "Filtrez par ville, type d'événement et budget", icon: FaMagnifyingGlass, number: 1 },
+              { title: "Réservez", desc: "Réservez en ligne en quelques clics simples", icon: FaCalendarDays, number: 2 },
+              { title: "Célébrez", desc: "Profitez de votre moment magique en toute sérénité", icon: FaChampagneGlasses, number: 3 }
+            ].map((step, idx) => (
+              <div 
+                key={idx} 
+                className="relative group animate-fade-in-up"
+                style={{animationDelay: `${idx * 0.15}s`}}
+              >
+                {/* Number circle */}
+                <div className="absolute -top-6 left-8 w-12 h-12 rounded-full bg-gradient-to-r from-primary-mid to-accent-pink flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-mid/40 z-10">
+                  {step.number}
                 </div>
-              )
-            })}
+
+                {/* Card */}
+                <div className="glass-card-lg p-8 h-full flex flex-col items-center text-center group-hover:bg-white/10 transition-all duration-300">
+                  <div className="text-5xl mb-6 text-accent group-hover:text-accent-pink transition-colors duration-300 group-hover:scale-110 transform group-hover:animate-float mt-4">
+                    <step.icon />
+                  </div>
+                  <h3 className="text-2xl font-bold text-text-light mb-3">{step.title}</h3>
+                  <p className="text-text-light/70">{step.desc}</p>
+                </div>
+
+                {/* Connecting line */}
+                {idx < 2 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-6 w-12 border-t-2 border-dashed border-accent/30 transform -translate-y-1/2"></div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="section-padding bg-primary">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { label: "Salles Disponibles", value: "500+", icon: FaGem },
+              { label: "Événements Organisés", value: "10,000+", icon: FaUsers },
+              { label: "Wilayas Couvertes", value: "58", icon: FaCheck },
+              { label: "Clients Satisfaits", value: "99%", icon: FaStar }
+            ].map((stat, idx) => (
+              <div 
+                key={idx}
+                className="glass-card-lg p-8 text-center group hover:bg-white/10 transition-all duration-300 animate-fade-in-up"
+                style={{animationDelay: `${idx * 0.1}s`}}
+              >
+                <div className="text-5xl text-accent mb-4 group-hover:scale-125 transition-transform duration-300 group-hover:animate-float">
+                  <stat.icon />
+                </div>
+                <div className="text-4xl font-bold gradient-text mb-2">{stat.value}</div>
+                <div className="text-text-light/70">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

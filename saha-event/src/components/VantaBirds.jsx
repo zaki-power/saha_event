@@ -23,7 +23,7 @@ export default function VantaBirds() {
           minWidth: 200,
           scale: 1,
           scaleMobile: 1,
-          backgroundColor: 0xffffff,
+          backgroundColor: 0x1a0533,
           color1: 0x6B21A8,
           color2: 0xEC4899,
           birdSize: 1.5,

@@ -5,6 +5,7 @@ import SalleCard from '../components/salles/SalleCard'
 
 // Updated to fa6 and renamed icons
 import { FaSliders, FaMagnifyingGlass } from 'react-icons/fa6'
+import FieldUI from '../components/ui/FieldUI'
 
 const WILAYAS = [
   "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
@@ -73,128 +74,107 @@ export default function Search() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Sidebar - Filters */}
-        <aside className="w-full lg:w-64 flex-shrink-0">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-24">
-            <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
-              <FaSliders className="mr-2" /> Filtres
-            </h2>
+    <div className="min-h-screen bg-primary section-padding">
+      <div className="container-custom">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Sidebar - Filters */}
+          <aside className="w-full lg:w-72 flex-shrink-0">
+            <div className="glass-card-lg p-8 sticky top-24 shadow-2xl shadow-primary-mid/20">
+              <h2 className="text-xl font-bold text-text-light mb-8 flex items-center">
+                <FaSliders className="mr-3 text-accent" /> Filtres
+              </h2>
 
-            <div className="space-y-6">
-              {/* Wilaya Filter */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Wilaya</label>
-                <select 
-                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary"
-                  value={filters.wilaya}
-                  onChange={(e) => setFilters({...filters, wilaya: e.target.value})}
+              <div className="space-y-6">
+                {/* Wilaya Filter */}
+                <div>
+                  <FieldUI label="Wilaya" type="select" value={filters.wilaya} onChange={(e) => setFilters({...filters, wilaya: e.target.value})} options={[{value: '', label: 'Toutes'}, ...WILAYAS]} />
+                </div>
+
+                {/* Price Range */}
+                <div>
+                  <label className="block text-sm font-semibold text-text-light/80 mb-2">Budget (DA)</label>
+                  <div className="flex gap-2">
+                    <FieldUI type="number" placeholder="Min" className="w-1/2" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} />
+                    <FieldUI type="number" placeholder="Max" className="w-1/2" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} />
+                  </div>
+                </div>
+
+                {/* Capacity */}
+                <div>
+                  <FieldUI label="Capacité Min." type="number" placeholder="Ex: 200" value={filters.capacity} onChange={(e) => setFilters({...filters, capacity: e.target.value})} />
+                </div>
+
+                {/* Amenities */}
+                <div>
+                  <label className="block text-sm font-semibold text-text-light/80 mb-3">Équipements</label>
+                  <div className="space-y-2">
+                    {AMENITIES.map(amenity => (
+                      <label key={amenity} className="flex items-center text-sm text-text-light/70 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          className="mr-2 rounded border-accent/30 text-accent bg-white/10 focus:ring-accent focus:ring-offset-0" 
+                        />
+                        <span className="group-hover:text-accent transition-colors">{amenity}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={applyFilters}
+                  className="btn-gradient w-full py-3"
                 >
-                  <option value="">Toutes</option>
-                  {WILAYAS.map(w => <option key={w} value={w}>{w}</option>)}
-                </select>
+                  Appliquer
+                </button>
               </div>
+            </div>
+          </aside>
 
-              {/* Price Range */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Budget (DA)</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="number" 
-                    placeholder="Min" 
-                    className="w-1/2 p-2 border border-gray-200 rounded-lg text-sm"
-                    value={filters.minPrice}
-                    onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
-                  />
-                  <input 
-                    type="number" 
-                    placeholder="Max" 
-                    className="w-1/2 p-2 border border-gray-200 rounded-lg text-sm"
-                    value={filters.maxPrice}
-                    onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
-                  />
+          {/* Right Content - Grid */}
+          <main className="flex-1">
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl lg:text-4xl font-bold gradient-text">
+                {loading ? 'Recherche...' : `${salles.length} ${salles.length === 1 ? 'salle' : 'salles'} trouvées`}
+              </h1>
+              <select className="glass-card px-3 py-2 text-sm font-semibold text-text-light/70 rounded-lg cursor-pointer">
+                <option>Trier par: Prix croissant</option>
+                <option>Trier par: Prix décroissant</option>
+                <option>Trier par: Popularité</option>
+              </select>
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="glass-card-lg h-80 animate-pulse rounded-2xl"></div>
+                ))}
+              </div>
+            ) : salles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {salles.map(salle => (
+                  <SalleCard key={salle.id} salle={salle} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 glass-card-lg rounded-3xl">
+                <div className="text-6xl mb-4 inline-block text-accent/30">
+                  <FaMagnifyingGlass />
                 </div>
+                <h3 className="text-xl font-bold text-text-light mb-2">Aucun résultat trouvé</h3>
+                <p className="text-text-light/60 mb-6">Essayez de modifier vos filtres pour voir plus d'options.</p>
+                <button 
+                  onClick={() => {
+                    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: ''})
+                    setSearchParams({})
+                  }}
+                  className="text-accent font-bold hover:text-accent-pink transition"
+                >
+                  Réinitialiser tout
+                </button>
               </div>
-
-              {/* Capacity */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Capacité Min.</label>
-                <input 
-                  type="number" 
-                  placeholder="Ex: 200" 
-                  className="w-full p-2 border border-gray-200 rounded-lg text-sm"
-                  value={filters.capacity}
-                  onChange={(e) => setFilters({...filters, capacity: e.target.value})}
-                />
-              </div>
-
-              {/* Amenities */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Équipements</label>
-                <div className="space-y-2">
-                  {AMENITIES.map(amenity => (
-                    <label key={amenity} className="flex items-center text-sm text-gray-600">
-                      <input type="checkbox" className="mr-2 rounded border-gray-300 text-primary focus:ring-primary" />
-                      {amenity}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <button 
-                onClick={applyFilters}
-                className="w-full bg-primary text-white font-bold py-2.5 rounded-lg hover:bg-opacity-90 transition shadow-md shadow-purple-100"
-              >
-                Appliquer
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Right Content - Grid */}
-        <main className="flex-1">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">
-              {loading ? 'Recherche...' : `${salles.length} salles trouvées`}
-            </h1>
-            <select className="bg-transparent border-none text-sm font-semibold text-gray-600 outline-none cursor-pointer">
-              <option>Trier par: Prix croissant</option>
-              <option>Trier par: Popularité</option>
-            </select>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="bg-gray-100 h-80 animate-pulse rounded-xl"></div>
-              ))}
-            </div>
-          ) : salles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {salles.map(salle => (
-                <SalleCard key={salle.id} salle={salle} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-gray-50 rounded-3xl">
-              <div className="text-6xl mb-4 inline-block text-gray-300">
-                <FaMagnifyingGlass />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Aucun résultat trouvé</h3>
-              <p className="text-gray-600">Essayez de modifier vos filtres pour voir plus d'options.</p>
-              <button 
-                onClick={() => {
-                  setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: ''})
-                  setSearchParams({})
-                }}
-                className="mt-6 text-primary font-bold hover:underline"
-              >
-                Réinitialiser tout
-              </button>
-            </div>
-          )}
-        </main>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   )

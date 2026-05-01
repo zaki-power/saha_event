@@ -24,31 +24,31 @@ export default function ReservationCard({ reservation, onUpdate }) {
 
   const statusConfig = {
     pending: {
-      color: 'bg-yellow-100 text-yellow-800',
+      color: 'badge-warning',
       label: 'En attente',
       icon: <HiClock />,
       msg: 'Votre demande est en cours d\'examen par un administrateur.'
     },
     confirmed: {
-      color: 'bg-green-100 text-green-800',
+      color: 'badge-success',
       label: 'Confirmée',
       icon: <HiCheckCircle />,
       msg: 'Réservation acceptée ! Veuillez uploader votre reçu de paiement CCP pour valider.'
     },
     payment_uploaded: {
-      color: 'bg-blue-100 text-blue-800',
+      color: 'badge-info',
       label: 'Paiement envoyé',
       icon: <HiClock />,
       msg: 'Reçu envoyé. Un administrateur va vérifier votre paiement.'
     },
     validated: {
-      color: 'bg-green-600 text-white',
+      color: 'badge-success',
       label: 'Validée',
       icon: <HiCheckCircle />,
       msg: 'Réservation validée ! Votre événement est officiellement confirmé.'
     },
     rejected: {
-      color: 'bg-red-100 text-red-800',
+      color: 'badge-error',
       label: 'Rejetée',
       icon: <HiXCircle />,
       msg: 'Votre demande a été refusée.'
@@ -104,10 +104,10 @@ export default function ReservationCard({ reservation, onUpdate }) {
       {/* Main Card */}
       <div 
         onClick={() => setShowModal(true)}
-        className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md hover:border-primary/20 cursor-pointer transition"
+        className="glass-card-lg p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary-mid/50 cursor-pointer transition"
       >
         <div className="flex items-center gap-5">
-          <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner">
+          <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 shadow-xl">
             <img 
               src={mainImage} 
               className="w-full h-full object-cover"
@@ -115,24 +115,24 @@ export default function ReservationCard({ reservation, onUpdate }) {
             />
           </div>
           <div>
-            <h4 className="font-bold text-gray-800 text-lg">{salles?.name || 'Salle'}</h4>
+            <h4 className="font-bold text-text-light text-lg">{salles?.name || 'Salle'}</h4>
             <div className="flex flex-col gap-0.5 mt-1">
-              <p className="text-sm text-gray-500 font-medium">
+              <p className="text-sm text-text-light/60 font-medium">
                 {new Date(event_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
-              <p className="text-xs font-bold text-primary uppercase tracking-wider">{event_type}</p>
+              <p className="text-xs font-bold text-accent uppercase tracking-wider">{event_type}</p>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center justify-between md:justify-end gap-8 border-t md:border-t-0 pt-4 md:pt-0">
+        <div className="flex items-center justify-between md:justify-end gap-8 border-t border-white/5 md:border-t-0 pt-4 md:pt-0">
           <div className="text-right">
-            <p className="font-black text-gray-900 text-xl">{total_price} DA</p>
+            <p className="font-black text-text-light text-xl">{total_price} DA</p>
             <span className={`inline-flex items-center gap-1 mt-1 text-xs px-3 py-1 rounded-full font-black uppercase tracking-tighter ${currentStatus.color}`}>
               {currentStatus.icon} {currentStatus.label}
             </span>
           </div>
-          <div className="p-2 bg-gray-50 text-gray-400 rounded-full group-hover:text-primary transition">
+          <div className="p-2 bg-primary-mid/20 text-accent rounded-full transition">
              <HiArrowTopRightOnSquare className="text-xl" />
           </div>
         </div>
@@ -141,20 +141,20 @@ export default function ReservationCard({ reservation, onUpdate }) {
       {/* Info Bar with Feedback Preview if status is rejected/confirmed */}
       <div 
         onClick={() => status === 'confirmed' ? null : setShowModal(true)}
-        className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center gap-4 transition-all duration-300 cursor-pointer
-        ${status === 'confirmed' ? 'bg-primary/5 border-primary/20 ring-4 ring-primary/5 shadow-lg' : 'bg-gray-50 border-gray-100'}`}
+        className={`glass-card p-4 rounded-2xl border flex flex-col sm:flex-row items-center gap-4 transition-all duration-300 cursor-pointer
+        ${status === 'confirmed' ? 'border-accent/50 ring-2 ring-accent/20' : 'border-white/10'}`}
       >
         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 
-          ${status === 'confirmed' ? 'bg-primary text-white animate-pulse' : 'bg-white text-gray-400 border border-gray-100'}`}>
+          ${status === 'confirmed' ? 'bg-accent/20 text-accent animate-pulse' : 'bg-primary-mid/20 text-text-light/50'}`}>
           <HiInformationCircle className="text-xl" />
         </div>
 
         <div className="flex-1 text-center sm:text-left">
-          <p className={`text-sm font-bold ${status === 'confirmed' ? 'text-primary' : 'text-gray-700'}`}>
+          <p className={`text-sm font-bold ${status === 'confirmed' ? 'text-accent' : 'text-text-light/80'}`}>
             {currentStatus.msg}
           </p>
           {admin_feedback && (
-            <p className="text-xs text-red-600 font-bold mt-1 bg-red-50 inline-block px-2 py-0.5 rounded-lg border border-red-100">
+            <p className="text-xs text-red-400 font-bold mt-1 bg-red-500/20 inline-block px-2 py-0.5 rounded-lg border border-red-500/30">
                Message: {admin_feedback}
             </p>
           )}
@@ -170,7 +170,7 @@ export default function ReservationCard({ reservation, onUpdate }) {
               disabled={uploading}
             />
             <button className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-sm transition-all duration-300 shadow-md
-              ${uploading ? 'bg-gray-300 text-gray-500' : 'bg-primary text-white hover:bg-opacity-90 hover:scale-105 active:scale-95'}`}>
+              ${uploading ? 'btn-ghost opacity-50 cursor-not-allowed' : 'btn-gold hover:scale-105 active:scale-95'}`}>
               <HiDocumentPlus className="text-lg" />
               {uploading ? 'Upload...' : 'UPLOADER LE REÇU PDF'}
             </button>
@@ -180,17 +180,17 @@ export default function ReservationCard({ reservation, onUpdate }) {
 
       {/* Detail Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowModal(false)}>
           <div 
-            className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-in"
+            className="glass-card-lg w-full max-w-2xl overflow-hidden flex flex-col animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div className="px-8 py-6 border-b border-white/10 flex justify-between items-center bg-primary-mid/30 backdrop-blur-lg">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Détails de ma Réservation</h2>
+                <h2 className="text-2xl font-bold text-text-light">Détails de ma Réservation</h2>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="text-xs text-gray-400 font-mono">#{id.slice(0, 8)}</span>
+                  <span className="text-xs text-text-light/50 font-mono">#{id.slice(0, 8)}</span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${currentStatus.color}`}>
                     {currentStatus.label}
                   </span>
@@ -198,7 +198,7 @@ export default function ReservationCard({ reservation, onUpdate }) {
               </div>
               <button 
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-white rounded-full transition text-gray-400 hover:text-gray-800 border border-transparent hover:border-gray-200"
+                className="p-2 hover:bg-white/10 rounded-full transition text-text-light/50 hover:text-accent border border-transparent hover:border-accent/30"
               >
                 <HiXMark className="w-6 h-6" />
               </button>
@@ -209,65 +209,65 @@ export default function ReservationCard({ reservation, onUpdate }) {
               <div className="space-y-8">
                 {/* Admin Feedback Section (Highlighted) */}
                 {admin_feedback && (
-                  <div className="bg-red-50 border-2 border-red-100 p-6 rounded-2xl">
-                    <h4 className="text-red-700 font-black text-xs uppercase tracking-widest flex items-center gap-2 mb-3">
+                  <div className="bg-red-500/20 border-2 border-red-500/40 p-6 rounded-2xl">
+                    <h4 className="text-red-400 font-black text-xs uppercase tracking-widest flex items-center gap-2 mb-3">
                         <HiChatBubbleLeftEllipsis className="text-xl" /> Message de l'administrateur
                     </h4>
-                    <p className="text-red-900 font-bold text-lg leading-relaxed italic">
+                    <p className="text-red-300 font-bold text-lg leading-relaxed italic">
                         "{admin_feedback}"
                     </p>
                   </div>
                 )}
 
                 {/* Status Message Section */}
-                <div className={`p-5 rounded-2xl border-2 border-dashed flex items-start gap-4 ${status === 'confirmed' ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
+                <div className={`p-5 rounded-2xl border-2 border-dashed flex items-start gap-4 ${status === 'confirmed' ? 'bg-accent/10 border-accent/50 text-accent' : 'bg-primary-mid/20 border-white/10 text-text-light/80'}`}>
                   <HiInformationCircle className="text-2xl shrink-0 mt-0.5" />
                   <p className="font-bold leading-relaxed">{currentStatus.msg}</p>
                 </div>
 
                 {/* Grid Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm"><HiMapPin className="text-xl" /></div>
+                  <div className="flex items-center gap-4 p-4 glass-card rounded-2xl">
+                    <div className="w-12 h-12 bg-primary-mid/40 rounded-xl flex items-center justify-center text-accent shadow-sm"><HiMapPin className="text-xl" /></div>
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase">Salle & Lieu</p>
-                      <p className="font-bold text-gray-800">{salles?.name}</p>
-                      <p className="text-xs text-gray-500">{salles?.city}</p>
+                      <p className="text-[10px] font-bold text-text-light/50 uppercase">Salle & Lieu</p>
+                      <p className="font-bold text-text-light">{salles?.name}</p>
+                      <p className="text-xs text-text-light/60">{salles?.city}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm"><HiCalendarDays className="text-xl" /></div>
+                  <div className="flex items-center gap-4 p-4 glass-card rounded-2xl">
+                    <div className="w-12 h-12 bg-primary-mid/40 rounded-xl flex items-center justify-center text-accent shadow-sm"><HiCalendarDays className="text-xl" /></div>
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase">Date</p>
-                      <p className="font-bold text-gray-800">{new Date(event_date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-[10px] font-bold text-text-light/50 uppercase">Date</p>
+                      <p className="font-bold text-text-light">{new Date(event_date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Receipt Section */}
-                <div className="pt-6 border-t border-gray-100">
+                <div className="pt-6 border-t border-white/10">
                   <div className="flex justify-between items-end mb-4">
                     <div>
-                      <h3 className="text-lg font-bold text-gray-800">Paiement & Justificatif</h3>
-                      <p className="text-sm text-gray-500">Total: {total_price} DA</p>
+                      <h3 className="text-lg font-bold text-text-light">Paiement & Justificatif</h3>
+                      <p className="text-sm text-text-light/60">Total: {total_price} DA</p>
                     </div>
                     {receipt_url && (
-                      <a href={receipt_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary font-bold hover:underline">
+                      <a href={receipt_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-accent font-bold hover:underline">
                         Voir mon reçu <HiArrowTopRightOnSquare />
                       </a>
                     )}
                   </div>
 
                   {status === 'confirmed' && (
-                    <div className="bg-primary/5 border border-primary/20 p-6 rounded-2xl flex flex-col items-center gap-4">
-                       <HiDocumentPlus className="text-4xl text-primary opacity-50" />
+                    <div className="bg-accent/10 border border-accent/30 p-6 rounded-2xl flex flex-col items-center gap-4">
+                       <HiDocumentPlus className="text-4xl text-accent opacity-60" />
                        <div className="text-center">
-                         <p className="font-bold text-primary">Prêt pour le paiement ?</p>
-                         <p className="text-xs text-primary/70 mt-1">Uploadez votre reçu CCP au format PDF.</p>
+                         <p className="font-bold text-accent">Prêt pour le paiement ?</p>
+                         <p className="text-xs text-text-light/60 mt-1">Uploadez votre reçu CCP au format PDF.</p>
                        </div>
                        <div className="relative w-full">
                           <input type="file" accept=".pdf" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={uploading} />
-                          <button className={`w-full py-3 rounded-xl font-black transition ${uploading ? 'bg-gray-200 text-gray-400' : 'bg-primary text-white hover:bg-opacity-90'}`}>
+                          <button className={`w-full py-3 rounded-xl font-black transition ${uploading ? 'btn-ghost opacity-50 cursor-not-allowed' : 'btn-gold'}`}>
                             {uploading ? 'Upload en cours...' : 'CHOISIR LE FICHIER PDF'}
                           </button>
                        </div>
@@ -278,8 +278,8 @@ export default function ReservationCard({ reservation, onUpdate }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-8 py-4 bg-gray-50 border-t border-gray-100 text-center">
-              <button onClick={() => setShowModal(false)} className="text-gray-500 font-bold hover:text-gray-800 transition">Fermer</button>
+            <div className="px-8 py-4 bg-primary-mid/30 border-t border-white/10 text-center">
+              <button onClick={() => setShowModal(false)} className="text-text-light/60 font-bold hover:text-accent transition">Fermer</button>
             </div>
           </div>
         </div>

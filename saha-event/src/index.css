@@ -5,7 +5,15 @@
 @layer base {
   body {
     font-family: 'Poppins', sans-serif;
+    @apply bg-primary text-text-light;
   }
+}
+
+/* Gradient animations */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @keyframes moveGradient {
@@ -29,6 +37,17 @@
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -42,10 +61,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(107, 33, 168, 0.3);
+    box-shadow: 0 0 20px rgba(107, 33, 168, 0.5);
   }
   50% {
-    box-shadow: 0 0 40px rgba(107, 33, 168, 0.6);
+    box-shadow: 0 0 40px rgba(107, 33, 168, 0.9);
   }
 }
 
@@ -58,14 +77,57 @@
   }
 }
 
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation utilities */
 @layer components {
+  .animate-gradient {
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+  }
+
   .animate-move-gradient {
     animation: moveGradient 8s ease infinite;
     background-size: 200% 200%;
   }
 
   .animate-float {
-    animation: float 3s ease-in-out infinite;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
   }
 
   .animate-slide-in-up {
@@ -79,13 +141,124 @@
   .animate-spin-slow {
     animation: spin-slow 10s linear infinite;
   }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-count-up {
+    animation: countUp 0.8s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  /* Glass card styling */
+  .glass-card {
+    @apply bg-glass backdrop-blur-md border border-white/10 rounded-2xl;
+  }
+
+  .glass-card-lg {
+    @apply bg-glass backdrop-blur-xl border border-white/20 rounded-3xl;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gradient buttons */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-primary-mid to-accent-pink text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-primary-mid/40 hover:translate-y-[-2px];
+  }
+
+  .btn-gradient-small {
+    @apply bg-gradient-to-r from-primary-mid to-accent-pink text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-primary-mid/40;
+  }
+
+  /* Ghost buttons */
+  .btn-ghost {
+    @apply border border-white/30 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-white/10 hover:border-white/50;
+  }
+
+  /* Gold accent button */
+  .btn-gold {
+    @apply bg-accent text-primary font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-yellow-400 hover:shadow-lg hover:shadow-accent/40;
+  }
+
+  /* Input fields */
+  .input-glass {
+    @apply bg-white/5 border border-white/20 text-white placeholder-white/50 rounded-xl px-4 py-3 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-300;
+  }
+
+  .input-glass::placeholder {
+    @apply text-white/50;
+  }
+
+  /* Section padding */
+  .section-padding {
+    @apply py-16 md:py-24 px-4 md:px-8;
+  }
+
+  /* Container */
+  .container-custom {
+    @apply max-w-7xl mx-auto;
+  }
+
+  /* Glow effects */
+  .glow-accent {
+    @apply shadow-lg shadow-accent/40;
+  }
+
+  .glow-primary {
+    @apply shadow-lg shadow-primary-mid/40;
+  }
+
+  /* Badge styling */
+  .badge-gold {
+    @apply bg-accent/20 text-accent px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-success {
+    @apply bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-error {
+    @apply bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-info {
+    @apply bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-medium;
+  }
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Moving gradient background for hero sections */
 .moving-bg {
-  background: linear-gradient(-45deg, #6B21A8, #EC4899, #6B21A8, #9333EA);
+  background: linear-gradient(135deg, #1a0533, #6B21A8, #1a0533);
   background-size: 400% 400%;
-  animation: moveGradient 15s ease infinite;
+  animation: gradientShift 8s ease infinite;
 }
 
 /* Add smooth transitions */
@@ -98,16 +271,27 @@ button {
   transition: all 0.3s ease;
 }
 
-/* Add fade-in animation utility */
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-in-out;
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+::-webkit-scrollbar-track {
+  background: rgba(26, 5, 51, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(107, 33, 168, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 33, 168, 0.8);
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(107, 33, 168, 0.4);
+  color: #f3e8ff;
 }
