@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Info, Send, Calendar, Users, FileText, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { FaInfo } from 'react-icons/fa6'
+import FieldUI from '../ui/FieldUI'
 
 const EVENT_TYPES = ["Mariage", "Anniversaire", "Conférence", "Soirée", "Autre"]
 
@@ -10,6 +12,7 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
+  const [success, setSuccess] = useState(false)
   
   const [formData, setFormData] = useState({
     eventType: '',
@@ -27,7 +30,6 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
 
     setSubmitting(true)
     try {
-      // 1. Insert into reservations table without receipt_url
       const { error: reserveError } = await supabase
         .from('reservations')
         .insert({
@@ -43,8 +45,10 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
 
       if (reserveError) throw reserveError
 
-      alert('Demande de réservation envoyée ! Un administrateur va l\'examiner.')
-      navigate('/dashboard/reservations')
+      setSuccess(true)
+      setTimeout(() => {
+        navigate('/dashboard/reservations')
+      }, 2000)
     } catch (err) {
       alert(err.message || 'Erreur lors de la réservation')
     } finally {
@@ -52,79 +56,104 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
     }
   }
 
+  if (success) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center py-12 px-6 bg-green-500/10 border border-green-500/20 rounded-[2.5rem]"
+      >
+        <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 size={40} className="text-green-500" />
+        </div>
+        <h3 className="text-2xl font-black text-white mb-4">Demande Envoyée !</h3>
+        <p className="text-text-light/50 font-medium leading-relaxed mb-8">
+          Votre demande de réservation a été transmise avec succès. Notre équipe l'examinera dans les plus brefs délais.
+        </p>
+        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: '100%' }}
+            transition={{ duration: 2 }}
+            className="bg-green-500 h-full"
+          />
+        </div>
+      </motion.div>
+    )
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-semibold text-text-light/80 mb-2">Type d'événement</label>
-        <select 
-          required
-          className="input-glass w-full appearance-none cursor-pointer"
-          style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22%3E%3Cpath fill=%22%23f3e8ff%22 d=%22M1 1l5 5 5-5%22/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '12px', paddingRight: '2.5rem'}}
-          value={formData.eventType}
-          onChange={(e) => setFormData({...formData, eventType: e.target.value})}
-        >
-          <option value="" className="bg-primary text-text-light">Sélectionner</option>
-          {EVENT_TYPES.map(t => <option key={t} value={t} className="bg-primary text-text-light">{t}</option>)}
-        </select>
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <FieldUI 
+        label="Type d'événement"
+        type="select"
+        required
+        options={["Sélectionner le type", ...EVENT_TYPES]}
+        value={formData.eventType}
+        onChange={(e) => setFormData({...formData, eventType: e.target.value})}
+      />
 
-      <div>
-        <label className="block text-sm font-semibold text-text-light/80 mb-2">Date souhaitée</label>
-        <input 
-          type="date" 
-          required
-          className="input-glass w-full"
-          value={formData.date}
-          onChange={(e) => setFormData({...formData, date: e.target.value})}
-        />
-      </div>
+      <FieldUI 
+        label="Date souhaitée"
+        type="date"
+        required
+        value={formData.date}
+        onChange={(e) => setFormData({...formData, date: e.target.value})}
+      />
 
-      <div>
-        <label className="block text-sm font-semibold text-text-light/80 mb-2">Nombre d'invités</label>
-        <input 
-          type="number" 
-          required
-          placeholder={`Max ${capacity}`}
-          className="input-glass w-full"
-          value={formData.guests}
-          onChange={(e) => setFormData({...formData, guests: e.target.value})}
-        />
-      </div>
+      <FieldUI 
+        label="Nombre d'invités"
+        type="number"
+        required
+        placeholder={`Capacité max: ${capacity}`}
+        value={formData.guests}
+        onChange={(e) => setFormData({...formData, guests: e.target.value})}
+      />
 
-      <div>
-        <label className="block text-sm font-semibold text-text-light/80 mb-2">Notes (Optionnel)</label>
-        <textarea 
-          placeholder="Détails supplémentaires..."
-          className="input-glass w-full resize-none"
-          rows="4"
-          value={formData.notes}
-          onChange={(e) => setFormData({...formData, notes: e.target.value})}
-        ></textarea>
-      </div>
+      <FieldUI 
+        label="Notes Particulières"
+        type="textarea"
+        placeholder="Informations complémentaires, traiteur, décorations..."
+        rows="4"
+        value={formData.notes}
+        onChange={(e) => setFormData({...formData, notes: e.target.value})}
+      />
 
-      <div className="pt-4 border-t border-primary-mid/20 mt-6">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-text-light/70 font-medium">Total estimé</span>
-          <span className="text-2xl font-black gradient-text">{pricePerDay} DA</span>
+      <div className="pt-6 border-t border-white/5 mt-8">
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <p className="text-[10px] font-black text-text-light/30 uppercase tracking-[0.2em] mb-1">Total Estimé</p>
+            <p className="text-3xl font-black text-white">{pricePerDay} <span className="text-accent text-sm ml-1 uppercase">DA</span></p>
+          </div>
+          <p className="text-[10px] font-bold text-text-light/30 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">TVA Incluse</p>
         </div>
         
-        <div className="glass-card p-4 border border-blue-500/30 bg-blue-500/5 mb-6 rounded-xl">
-          <div className="flex gap-3">
-            <FaInfo className="text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-300 font-medium leading-relaxed">
-              Une fois votre demande confirmée par l'administrateur, vous pourrez uploader votre reçu de paiement.
-            </p>
+        <div className="bg-primary/50 border border-blue-500/20 p-5 rounded-2xl mb-8 flex gap-4">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+            <Info size={18} className="text-blue-400" />
           </div>
+          <p className="text-xs text-blue-300/80 font-medium leading-relaxed">
+            Suite à la confirmation de l'administrateur, un lien de paiement sécurisé vous sera transmis pour finaliser votre réservation.
+          </p>
         </div>
-      </div>
 
-      <FieldUI
-        type="submit"
-        disabled={submitting}
-        className={submitting ? 'opacity-70 cursor-not-allowed' : ''}
-      >
-        {submitting ? 'Traitement...' : 'Envoyer la demande'}
-      </FieldUI>
+        <FieldUI
+          type="submit"
+          disabled={submitting}
+          className={submitting ? 'opacity-70 cursor-not-allowed' : ''}
+        >
+          <div className="flex items-center justify-center gap-3">
+            {submitting ? (
+              <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+            ) : (
+              <>
+                <Send size={18} />
+                <span>Envoyer la Demande</span>
+              </>
+            )}
+          </div>
+        </FieldUI>
+      </div>
     </form>
   )
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 export default function Login() {
@@ -31,80 +33,123 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 animate-gradient" style={{
-        background: 'linear-gradient(135deg, #1a0533, #6B21A8, #1a0533)',
-        backgroundSize: '400% 400%'
-      }}></div>
+      {/* Background Decor */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-mid rounded-full blur-[120px] opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-[10%] right-[-5%] w-[35%] h-[35%] bg-accent-pink rounded-full blur-[100px] opacity-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
-      {/* Floating decorative circles */}
-      <div className="absolute top-20 right-10 w-72 h-72 bg-accent-pink rounded-full opacity-5 blur-3xl animate-float"></div>
-      <div className="absolute bottom-10 left-20 w-80 h-80 bg-primary-mid rounded-full opacity-5 blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
-
-      {/* Form Card */}
-      <div className="max-w-md w-full relative z-10">
-        <div className="glass-card-lg p-10 shadow-2xl shadow-primary-mid/20">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-block">
-              <span className="text-3xl font-bold gradient-text">Saha✦Event</span>
-            </Link>
-            <p className="text-text-light/60 text-sm mt-2 italic">Prêt à organiser votre prochain grand moment ?</p>
-          </div>
-
-          <h2 className="text-3xl font-bold text-text-light mb-8 text-center">Connexion</h2>
-          
-          {error && (
-            <div className="mb-6 bg-red-500/20 border border-red-500/50 p-4 text-red-300 text-sm rounded-lg">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-text-light/80 mb-2">Email</label>
-              <input
-                type="email"
-                required
-                className="input-glass w-full"
-                placeholder="votre@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-semibold text-text-light/80">Mot de passe</label>
-                <a href="#" className="text-xs text-accent hover:text-accent-pink transition">Oublié ?</a>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full relative z-10"
+      >
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 lg:p-12 shadow-2xl">
+          {/* Logo & Header */}
+          <div className="text-center mb-10">
+            <Link to="/" className="inline-flex items-center space-x-2 group mb-6">
+              <div className="w-10 h-10 bg-gradient-to-tr from-primary-mid to-accent-pink rounded-xl flex items-center justify-center shadow-lg shadow-primary-mid/20">
+                <span className="text-white font-bold text-xl">S</span>
               </div>
-              <input
-                type="password"
-                required
-                className="input-glass w-full"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <span className="text-2xl font-black tracking-tight text-white group-hover:text-accent transition-colors">
+                Saha<span className="text-accent">✦</span>Event
+              </span>
+            </Link>
+            <h2 className="text-3xl font-black text-white mb-2">Bon Retour !</h2>
+            <p className="text-text-light/40 text-sm font-medium uppercase tracking-widest">Connectez-vous à votre palais</p>
+          </div>
+          
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6 bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-start gap-3"
+              >
+                <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-red-500 font-bold text-xs">!</span>
+                </div>
+                <p className="text-red-400 text-xs font-bold leading-relaxed">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2 group">
+              <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1 group-focus-within:text-accent transition-colors">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-text-light/30 group-focus-within:text-accent transition-colors" size={18} />
+                <input
+                  type="email"
+                  required
+                  className="w-full input-glass pl-12 pr-6 py-4"
+                  placeholder="votre@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
             </div>
 
-            <button
+            <div className="space-y-2 group">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] group-focus-within:text-accent transition-colors">Mot de passe</label>
+                <a href="#" className="text-[10px] font-black text-accent hover:text-white uppercase tracking-widest transition-colors">Oublié ?</a>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-text-light/30 group-focus-within:text-accent transition-colors" size={18} />
+                <input
+                  type="password"
+                  required
+                  className="w-full input-glass pl-12 pr-6 py-4"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={loading}
-              className={`btn-gradient w-full py-3 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full bg-accent hover:bg-yellow-400 text-primary py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-accent/10 transition-all flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {loading ? 'Connexion en cours...' : 'Se connecter'}
-            </button>
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>Se connecter</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </motion.button>
           </form>
 
-          <div className="mt-8 text-center text-text-light/60 text-sm">
-            Nouveau sur Saha-Event ?{' '}
-            <Link to="/auth/register" className="text-accent font-bold hover:text-accent-pink transition">
-              Créer un compte
-            </Link>
+          <div className="mt-10 text-center">
+            <p className="text-text-light/30 text-xs font-bold uppercase tracking-widest">
+              Pas encore membre ?{' '}
+              <Link to="/auth/register" className="text-accent hover:text-white transition-colors">
+                Créer un compte
+              </Link>
+            </p>
           </div>
         </div>
-      </div>
+
+        {/* Bottom Trust Badge */}
+        <div className="mt-8 flex items-center justify-center gap-6 text-text-light/20">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Sécurisé par Supabase</span>
+          </div>
+          <div className="w-px h-4 bg-white/5"></div>
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Élite Expérience</span>
+          </div>
+        </div>
+      </motion.div>
     </div>
   )
 }

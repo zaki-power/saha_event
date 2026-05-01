@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  SlidersHorizontal, 
+  Search as SearchIcon, 
+  MapPin, 
+  Users, 
+  Euro, 
+  Wifi, 
+  FilterX, 
+  ChevronDown,
+  LayoutGrid,
+  List as ListIcon
+} from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import SalleCard from '../components/salles/SalleCard'
-
-// Updated to fa6 and renamed icons
-import { FaSliders, FaMagnifyingGlass } from 'react-icons/fa6'
-import FieldUI from '../components/ui/FieldUI'
 
 const WILAYAS = [
   "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
@@ -24,6 +33,7 @@ export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [salles, setSalles] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
 
   // Local state for filters
   const [filters, setFilters] = useState({
@@ -36,6 +46,7 @@ export default function Search() {
 
   useEffect(() => {
     fetchSalles()
+    window.scrollTo(0, 0)
   }, [searchParams])
 
   const fetchSalles = async () => {
@@ -61,7 +72,7 @@ export default function Search() {
     } catch (err) {
       console.error('Error fetching salles:', err)
     } finally {
-      setLoading(false)
+      setTimeout(() => setLoading(false), 500)
     }
   }
 
@@ -71,108 +82,210 @@ export default function Search() {
       if (value) params[key] = value
     })
     setSearchParams(params)
+    if (window.innerWidth < 1024) setShowFilters(false)
+  }
+
+  const clearFilters = () => {
+    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: ''})
+    setSearchParams({})
   }
 
   return (
-    <div className="min-h-screen bg-primary section-padding">
-      <div className="container-custom">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Sidebar - Filters */}
-          <aside className="w-full lg:w-72 flex-shrink-0">
-            <div className="glass-card-lg p-8 sticky top-24 shadow-2xl shadow-primary-mid/20">
-              <h2 className="text-xl font-bold text-text-light mb-8 flex items-center">
-                <FaSliders className="mr-3 text-accent" /> Filtres
-              </h2>
+    <div className="min-h-screen bg-primary pt-24 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-black text-white mb-2">
+              Trouver un <span className="gradient-text">Espace</span>
+            </h1>
+            <p className="text-text-light/40 font-bold uppercase tracking-widest text-xs">
+              {loading ? 'Recherche en cours...' : `${salles.length} Résultats trouvés`}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className="lg:hidden flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 rounded-2xl text-white font-bold transition-all hover:bg-white/10"
+            >
+              <SlidersHorizontal size={18} />
+              <span>Filtres</span>
+            </button>
+            
+            <div className="flex bg-white/5 border border-white/10 p-1 rounded-2xl">
+              <button className="p-2 text-accent bg-white/5 rounded-xl shadow-inner shadow-black/20"><LayoutGrid size={20} /></button>
+              <button className="p-2 text-text-light/30 hover:text-text-light transition-colors"><ListIcon size={20} /></button>
+            </div>
+            
+            <div className="relative hidden md:block">
+              <select className="appearance-none bg-white/5 border border-white/10 text-white pl-5 pr-12 py-3.5 rounded-2xl font-bold text-sm focus:outline-none focus:border-accent transition-all cursor-pointer">
+                <option>Plus récents</option>
+                <option>Prix croissant</option>
+                <option>Prix décroissant</option>
+                <option>Capacité max</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-light/30 pointer-events-none" size={16} />
+            </div>
+          </div>
+        </div>
 
-              <div className="space-y-6">
-                {/* Wilaya Filter */}
-                <div>
-                  <FieldUI label="Wilaya" type="select" value={filters.wilaya} onChange={(e) => setFilters({...filters, wilaya: e.target.value})} options={[{value: '', label: 'Toutes'}, ...WILAYAS]} />
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* Filters Sidebar */}
+          <aside className={`lg:w-80 flex-shrink-0 ${showFilters ? 'fixed inset-0 z-[100] bg-primary/95 p-6 overflow-y-auto' : 'hidden lg:block'}`}>
+            <div className="lg:sticky lg:top-24 space-y-10">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                  <SlidersHorizontal size={20} className="text-accent" />
+                  Affiner
+                </h2>
+                {showFilters && (
+                  <button onClick={() => setShowFilters(false)} className="lg:hidden text-text-light/50"><FilterX size={24} /></button>
+                )}
+                {(filters.wilaya || filters.capacity || filters.minPrice) && (
+                  <button onClick={clearFilters} className="text-xs font-bold text-accent hover:underline uppercase tracking-widest">Effacer</button>
+                )}
+              </div>
+
+              <div className="space-y-8">
+                {/* Wilaya */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1">Wilaya</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light/30" size={18} />
+                    <select 
+                      className="w-full input-glass pl-12 pr-10 py-3.5 appearance-none cursor-pointer"
+                      value={filters.wilaya}
+                      onChange={(e) => setFilters({...filters, wilaya: e.target.value})}
+                    >
+                      <option value="" className="bg-primary text-text-light">Toutes les wilayas</option>
+                      {WILAYAS.map(w => <option key={w} value={w} className="bg-primary text-text-light">{w}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-light/30 pointer-events-none" size={16} />
+                  </div>
                 </div>
 
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-semibold text-text-light/80 mb-2">Budget (DA)</label>
-                  <div className="flex gap-2">
-                    <FieldUI type="number" placeholder="Min" className="w-1/2" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} />
-                    <FieldUI type="number" placeholder="Max" className="w-1/2" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} />
+                {/* Price */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1">Budget (DA)</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input 
+                      type="number" 
+                      placeholder="Min" 
+                      className="input-glass px-4 py-3.5"
+                      value={filters.minPrice} 
+                      onChange={(e) => setFilters({...filters, minPrice: e.target.value})} 
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Max" 
+                      className="input-glass px-4 py-3.5"
+                      value={filters.maxPrice} 
+                      onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} 
+                    />
                   </div>
                 </div>
 
                 {/* Capacity */}
-                <div>
-                  <FieldUI label="Capacité Min." type="number" placeholder="Ex: 200" value={filters.capacity} onChange={(e) => setFilters({...filters, capacity: e.target.value})} />
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1">Capacité Min.</label>
+                  <div className="relative">
+                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light/30" size={18} />
+                    <input 
+                      type="number"
+                      placeholder="Nombre d'invités"
+                      className="w-full input-glass pl-12 pr-4 py-3.5"
+                      value={filters.capacity}
+                      onChange={(e) => setFilters({...filters, capacity: e.target.value})}
+                    />
+                  </div>
                 </div>
 
                 {/* Amenities */}
-                <div>
-                  <label className="block text-sm font-semibold text-text-light/80 mb-3">Équipements</label>
-                  <div className="space-y-2">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1">Commodités</label>
+                  <div className="grid grid-cols-1 gap-3">
                     {AMENITIES.map(amenity => (
-                      <label key={amenity} className="flex items-center text-sm text-text-light/70 cursor-pointer group">
+                      <label key={amenity} className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group">
                         <input 
                           type="checkbox" 
-                          className="mr-2 rounded border-accent/30 text-accent bg-white/10 focus:ring-accent focus:ring-offset-0" 
+                          className="w-5 h-5 rounded-lg border-white/10 bg-white/5 text-accent focus:ring-accent focus:ring-offset-0" 
                         />
-                        <span className="group-hover:text-accent transition-colors">{amenity}</span>
+                        <span className="text-sm font-bold text-text-light/60 group-hover:text-white transition-colors">{amenity}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={applyFilters}
-                  className="btn-gradient w-full py-3"
+                  className="w-full bg-accent hover:bg-yellow-400 text-primary py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-accent/10 transition-all"
                 >
                   Appliquer
-                </button>
+                </motion.button>
               </div>
             </div>
           </aside>
 
-          {/* Right Content - Grid */}
+          {/* Results Grid */}
           <main className="flex-1">
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl lg:text-4xl font-bold gradient-text">
-                {loading ? 'Recherche...' : `${salles.length} ${salles.length === 1 ? 'salle' : 'salles'} trouvées`}
-              </h1>
-              <select className="glass-card px-3 py-2 text-sm font-semibold text-text-light/70 rounded-lg cursor-pointer">
-                <option>Trier par: Prix croissant</option>
-                <option>Trier par: Prix décroissant</option>
-                <option>Trier par: Popularité</option>
-              </select>
-            </div>
-
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="glass-card-lg h-80 animate-pulse rounded-2xl"></div>
-                ))}
-              </div>
-            ) : salles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {salles.map(salle => (
-                  <SalleCard key={salle.id} salle={salle} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 glass-card-lg rounded-3xl">
-                <div className="text-6xl mb-4 inline-block text-accent/30">
-                  <FaMagnifyingGlass />
-                </div>
-                <h3 className="text-xl font-bold text-text-light mb-2">Aucun résultat trouvé</h3>
-                <p className="text-text-light/60 mb-6">Essayez de modifier vos filtres pour voir plus d'options.</p>
-                <button 
-                  onClick={() => {
-                    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: ''})
-                    setSearchParams({})
-                  }}
-                  className="text-accent font-bold hover:text-accent-pink transition"
+            <AnimatePresence mode='wait'>
+              {loading ? (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-8"
                 >
-                  Réinitialiser tout
-                </button>
-              </div>
-            )}
+                  {[1, 2, 4, 5, 6].map(i => (
+                    <div key={i} className="h-[400px] rounded-[2rem] bg-white/5 animate-pulse border border-white/10"></div>
+                  ))}
+                </motion.div>
+              ) : salles.length > 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-8"
+                >
+                  {salles.map((salle, idx) => (
+                    <motion.div
+                      key={salle.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                    >
+                      <SalleCard salle={salle} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-32 bg-white/5 border border-white/10 rounded-[3rem] text-center px-6"
+                >
+                  <div className="w-24 h-24 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8">
+                    <SearchIcon size={40} />
+                  </div>
+                  <h3 className="text-3xl font-black text-white mb-4">Aucun palais trouvé</h3>
+                  <p className="text-text-light/40 max-w-md mb-10 leading-relaxed font-medium">
+                    Nous n'avons trouvé aucune salle correspondant à vos critères actuels. Essayez d'élargir votre recherche ou de réinitialiser les filtres.
+                  </p>
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={clearFilters}
+                    className="flex items-center gap-2 text-accent font-black uppercase tracking-widest bg-accent/10 px-8 py-4 rounded-2xl hover:bg-accent hover:text-primary transition-all"
+                  >
+                    <FilterX size={20} />
+                    <span>Réinitialiser</span>
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </main>
         </div>
       </div>
