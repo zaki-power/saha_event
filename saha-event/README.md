@@ -1,16 +1,38 @@
-# React + Vite
+# Saha Event - Reservation Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern event space reservation platform built with React, Vite, Tailwind CSS, and Supabase.
 
-Currently, two official plugins are available:
+## 🚀 Deployment on Vercel
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+To deploy this project on Vercel, follow these steps:
 
-## React Compiler
+1. **Push your code to GitHub.**
+2. **Create a new project on Vercel** and import your repository.
+3. **Configure Environment Variables:** In the Vercel dashboard, add the following variables:
+   - `VITE_SUPABASE_URL`: Your Supabase project URL.
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous API key.
+4. **Build Settings:** Vercel should automatically detect Vite, but if not:
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠 Features
 
-## Expanding the ESLint configuration
+- **User Authentication:** Sign up/Login via Supabase Auth.
+- **Reservation Workflow:** Users can book salles, admins can approve/reject.
+- **CCP Payment Integration:** Users receive CCP details upon approval and can upload PDF receipts.
+- **Admin Dashboard:** Full management of reservations and feedback.
+- **Modern UI:** Glassmorphism design with Vanta.js backgrounds.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📦 Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```

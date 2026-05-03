@@ -12,15 +12,32 @@ import {
   HiUserGroup,
   HiTag,
   HiMapPin,
-  HiChatBubbleLeftEllipsis
+  HiChatBubbleLeftEllipsis,
+  HiClipboardDocument,
+  HiCreditCard
 } from 'react-icons/hi2'
 
 export default function ReservationCard({ reservation, onUpdate }) {
   const { id, salles, event_date, event_type, status, total_price, receipt_url, client_id, guests_count, notes, admin_feedback } = reservation
   const [uploading, setUploading] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [copied, setCopied] = useState(false)
   
   const mainImage = Array.isArray(salles?.images) ? salles.images[0] : (salles?.images || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=200')
+
+  // Platform CCP Information (Can be moved to a config file later)
+  const ccpInfo = {
+    owner: "SAHA EVENT",
+    number: "0021345678",
+    key: "90"
+  }
+
+  const handleCopyCcp = (e) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(`${ccpInfo.number}${ccpInfo.key}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const statusConfig = {
     pending: {
@@ -33,7 +50,7 @@ export default function ReservationCard({ reservation, onUpdate }) {
       color: 'badge-success',
       label: 'Confirmée',
       icon: <HiCheckCircle />,
-      msg: 'Réservation acceptée ! Veuillez uploader votre reçu de paiement CCP pour valider.'
+      msg: 'Réservation acceptée ! Veuillez effectuer le virement CCP et uploader votre reçu.'
     },
     payment_uploaded: {
       color: 'badge-info',
@@ -99,6 +116,44 @@ export default function ReservationCard({ reservation, onUpdate }) {
     }
   }
 
+  const CcpDetailsSection = () => (
+    <div className="bg-primary-mid/40 border border-accent/20 rounded-2xl p-6 mt-4 animate-fade-in">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-accent font-black text-xs uppercase tracking-widest flex items-center gap-2">
+          <HiCreditCard className="text-xl" /> Informations de Paiement (CCP)
+        </h4>
+        <button 
+          onClick={handleCopyCcp}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all
+            ${copied ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 'bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20'}`}
+        >
+          <HiClipboardDocument className="text-sm" />
+          {copied ? 'Copié !' : 'Copier CCP'}
+        </button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-text-light/50 uppercase">Nom du Titulaire</label>
+          <p className="text-text-light font-bold text-sm bg-white/5 p-2 rounded-lg border border-white/5">{ccpInfo.owner}</p>
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-text-light/50 uppercase">Numéro CCP / Clé</label>
+          <div className="flex items-center gap-2">
+            <p className="flex-1 text-text-light font-bold font-mono text-lg bg-white/5 p-2 rounded-lg border border-white/5 tracking-wider">
+              {ccpInfo.number} <span className="text-accent">/ {ccpInfo.key}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <p className="text-[10px] text-text-light/40 mt-4 leading-relaxed flex items-start gap-2 italic">
+        <HiInformationCircle className="text-sm mt-0.5 shrink-0" />
+        Effectuez le virement de {total_price} DA vers ce compte, puis uploadez le talon de virement ci-dessous.
+      </p>
+    </div>
+  )
+
   return (
     <div className="flex flex-col gap-3">
       {/* Main Card */}
@@ -138,44 +193,48 @@ export default function ReservationCard({ reservation, onUpdate }) {
         </div>
       </div>
 
-      {/* Info Bar with Feedback Preview if status is rejected/confirmed */}
+      {/* Info Bar / Action Bar */}
       <div 
         onClick={() => status === 'confirmed' ? null : setShowModal(true)}
-        className={`glass-card p-4 rounded-2xl border flex flex-col sm:flex-row items-center gap-4 transition-all duration-300 cursor-pointer
+        className={`glass-card p-4 rounded-2xl border flex flex-col items-stretch gap-4 transition-all duration-300 cursor-pointer
         ${status === 'confirmed' ? 'border-accent/50 ring-2 ring-accent/20' : 'border-white/10'}`}
       >
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 
-          ${status === 'confirmed' ? 'bg-accent/20 text-accent animate-pulse' : 'bg-primary-mid/20 text-text-light/50'}`}>
-          <HiInformationCircle className="text-xl" />
-        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 
+            ${status === 'confirmed' ? 'bg-accent/20 text-accent animate-pulse' : 'bg-primary-mid/20 text-text-light/50'}`}>
+            <HiInformationCircle className="text-xl" />
+          </div>
 
-        <div className="flex-1 text-center sm:text-left">
-          <p className={`text-sm font-bold ${status === 'confirmed' ? 'text-accent' : 'text-text-light/80'}`}>
-            {currentStatus.msg}
-          </p>
-          {admin_feedback && (
-            <p className="text-xs text-red-400 font-bold mt-1 bg-red-500/20 inline-block px-2 py-0.5 rounded-lg border border-red-500/30">
-               Message: {admin_feedback}
+          <div className="flex-1 text-center sm:text-left">
+            <p className={`text-sm font-bold ${status === 'confirmed' ? 'text-accent' : 'text-text-light/80'}`}>
+              {currentStatus.msg}
             </p>
+            {admin_feedback && (
+              <p className="text-xs text-red-400 font-bold mt-1 bg-red-500/20 inline-block px-2 py-0.5 rounded-lg border border-red-500/30">
+                 Message: {admin_feedback}
+              </p>
+            )}
+          </div>
+
+          {status === 'confirmed' && (
+            <div className="relative group" onClick={(e) => e.stopPropagation()}>
+              <input 
+                type="file" 
+                accept=".pdf" 
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                disabled={uploading}
+              />
+              <button className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-sm transition-all duration-300 shadow-md
+                ${uploading ? 'btn-ghost opacity-50 cursor-not-allowed' : 'btn-gold hover:scale-105 active:scale-95'}`}>
+                <HiDocumentPlus className="text-lg" />
+                {uploading ? 'Upload...' : 'UPLOADER LE REÇU PDF'}
+              </button>
+            </div>
           )}
         </div>
 
-        {status === 'confirmed' && (
-          <div className="relative group" onClick={(e) => e.stopPropagation()}>
-            <input 
-              type="file" 
-              accept=".pdf" 
-              onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              disabled={uploading}
-            />
-            <button className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-sm transition-all duration-300 shadow-md
-              ${uploading ? 'btn-ghost opacity-50 cursor-not-allowed' : 'btn-gold hover:scale-105 active:scale-95'}`}>
-              <HiDocumentPlus className="text-lg" />
-              {uploading ? 'Upload...' : 'UPLOADER LE REÇU PDF'}
-            </button>
-          </div>
-        )}
+        {status === 'confirmed' && <CcpDetailsSection />}
       </div>
 
       {/* Detail Modal */}
@@ -224,6 +283,8 @@ export default function ReservationCard({ reservation, onUpdate }) {
                   <HiInformationCircle className="text-2xl shrink-0 mt-0.5" />
                   <p className="font-bold leading-relaxed">{currentStatus.msg}</p>
                 </div>
+
+                {status === 'confirmed' && <CcpDetailsSection />}
 
                 {/* Grid Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
