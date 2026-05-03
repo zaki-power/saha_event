@@ -273,6 +273,7 @@ export default function SalleDetail() {
                 <ReservationForm 
                   salleId={id} 
                   pricePerDay={salle.price_per_day} 
+                  pricePerGuest={salle.price_per_guest}
                   capacity={salle.capacity} 
                 />
               )}

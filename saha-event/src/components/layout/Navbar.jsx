@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { HiPlusCircle } from 'react-icons/hi2'
 
 export default function Navbar() {
   const { user, signOut } = useAuth()
@@ -186,6 +187,17 @@ export default function Navbar() {
                         <LayoutDashboard size={18} />
                         <span>Tableau de bord</span>
                       </Link>
+
+                      {isAdmin && (
+                        <Link 
+                          to="/dashboard/add-salle" 
+                          className="flex items-center space-x-3 px-4 py-2.5 text-sm text-text-light hover:bg-white/5 hover:text-accent transition-colors"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
+                          <HiPlusCircle size={18} className="text-accent" />
+                          <span>Ajouter une salle</span>
+                        </Link>
+                      )}
                       
                       <button
                         onClick={() => {

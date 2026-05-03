@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { Link } from 'react-router-dom'
 import { 
   HiCheckCircle, 
   HiXCircle, 
@@ -13,7 +14,8 @@ import {
   HiXMark,
   HiArrowTopRightOnSquare,
   HiShieldCheck,
-  HiChatBubbleLeftEllipsis
+  HiChatBubbleLeftEllipsis,
+  HiPlusCircle
 } from 'react-icons/hi2'
 
 export default function AdminDashboard() {
@@ -23,7 +25,9 @@ export default function AdminDashboard() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRes, setSelectedRes] = useState(null)
-  const [feedback, setFeedback] = useState('') // New state for admin feedback
+  const [feedback, setFeedback] = useState('') 
+  const [actionLoading, setActionLoading] = useState(false)
+  const [actionSuccess, setActionSuccess] = useState(null)
 
   useEffect(() => {
     fetchAdminData()
@@ -37,6 +41,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (selectedRes) {
       setFeedback(selectedRes.admin_feedback || '')
+      setActionSuccess(null)
     }
   }, [selectedRes])
 
@@ -93,12 +98,13 @@ export default function AdminDashboard() {
   }
 
   const handleUpdateStatus = async (id, newStatus) => {
+    setActionLoading(true)
     try {
       const { error } = await supabase
         .from('reservations')
         .update({ 
             status: newStatus,
-            admin_feedback: feedback // Include feedback in the update
+            admin_feedback: feedback 
         })
         .eq('id', id)
 
@@ -111,9 +117,12 @@ export default function AdminDashboard() {
         setSelectedRes(prev => ({ ...prev, status: newStatus, admin_feedback: feedback }))
       }
       
-      alert(`Statut mis à jour: ${newStatus}`)
+      setActionSuccess(`Statut mis à jour: ${newStatus}`)
+      setTimeout(() => setActionSuccess(null), 3000)
     } catch (err) {
       alert('Erreur: ' + err.message)
+    } finally {
+      setActionLoading(false)
     }
   }
 
@@ -149,9 +158,21 @@ export default function AdminDashboard() {
             <p className="text-text-light/60 font-medium">Gérez les demandes et communiquez avec les clients.</p>
           </div>
           
-          <div className="glass-card-lg p-6 rounded-2xl min-w-[180px]">
-            <p className="text-sm text-text-light/70 font-medium">Total des réservations</p>
-            <p className="text-3xl font-black gradient-text">{reservations.length}</p>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <Link 
+              to="/dashboard/add-salle" 
+              className="glass-card p-4 px-6 flex items-center gap-3 group hover:scale-105 transition-all border border-accent/30 hover:border-accent"
+            >
+              <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary text-xl shadow-lg shadow-accent/20 group-hover:rotate-12 transition-transform">
+                <HiPlusCircle />
+              </div>
+              <span className="font-bold text-accent uppercase tracking-wider text-xs">Ajouter une Salle</span>
+            </Link>
+
+            <div className="glass-card-lg p-6 rounded-2xl min-w-[180px]">
+              <p className="text-sm text-text-light/70 font-medium">Total des réservations</p>
+              <p className="text-3xl font-black gradient-text">{reservations.length}</p>
+            </div>
           </div>
         </div>
 
@@ -357,23 +378,49 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="space-y-3">
+                      {actionSuccess && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold rounded-xl text-center flex items-center justify-center gap-2"
+                        >
+                          <HiCheckCircle className="text-lg" /> {actionSuccess}
+                        </motion.div>
+                      )}
+
                       <p className="text-[10px] font-black text-text-light/40 uppercase px-2">Actions disponibles</p>
                       {selectedRes.status === 'pending' && (
                           <>
-                              <button onClick={() => handleUpdateStatus(selectedRes.id, 'confirmed')} className="w-full bg-green-600/40 border border-green-500/50 text-green-300 py-4 rounded-xl font-black hover:bg-green-600/60 transition flex items-center justify-center gap-2 uppercase text-sm">
-                                  <HiCheckCircle className="text-xl" /> Accepter Demande
+                              <button 
+                                disabled={actionLoading}
+                                onClick={() => handleUpdateStatus(selectedRes.id, 'confirmed')} 
+                                className="w-full bg-green-600/40 border border-green-500/50 text-green-300 py-4 rounded-xl font-black hover:bg-green-600/60 transition flex items-center justify-center gap-2 uppercase text-sm disabled:opacity-50"
+                              >
+                                  {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><HiCheckCircle className="text-xl" /> Accepter Demande</>}
                               </button>
-                              <button onClick={() => handleUpdateStatus(selectedRes.id, 'rejected')} className="w-full bg-red-600/40 border border-red-500/50 text-red-300 py-4 rounded-xl font-black hover:bg-red-600/60 transition flex items-center justify-center gap-2 uppercase text-sm">
+                              <button 
+                                disabled={actionLoading}
+                                onClick={() => handleUpdateStatus(selectedRes.id, 'rejected')} 
+                                className="w-full bg-red-600/40 border border-red-500/50 text-red-300 py-4 rounded-xl font-black hover:bg-red-600/60 transition flex items-center justify-center gap-2 uppercase text-sm disabled:opacity-50"
+                              >
                                   <HiXCircle className="text-xl" /> Rejeter
                               </button>
                           </>
                       )}
                       {selectedRes.status === 'payment_uploaded' && (
                           <>
-                              <button onClick={() => handleUpdateStatus(selectedRes.id, 'validated')} className="w-full bg-accent/40 border border-accent/50 text-accent py-4 rounded-xl font-black hover:bg-accent/60 transition flex items-center justify-center gap-2 uppercase text-sm">
-                                  <HiShieldCheck className="text-xl" /> Valider Paiement
+                              <button 
+                                disabled={actionLoading}
+                                onClick={() => handleUpdateStatus(selectedRes.id, 'validated')} 
+                                className="w-full bg-accent/40 border border-accent/50 text-accent py-4 rounded-xl font-black hover:bg-accent/60 transition flex items-center justify-center gap-2 uppercase text-sm disabled:opacity-50"
+                              >
+                                  {actionLoading ? <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" /> : <><HiShieldCheck className="text-xl" /> Valider Paiement</>}
                               </button>
-                              <button onClick={() => handleUpdateStatus(selectedRes.id, 'rejected')} className="w-full bg-red-600/40 border border-red-500/50 text-red-300 py-4 rounded-xl font-black hover:bg-red-600/60 transition flex items-center justify-center gap-2 uppercase text-sm">
+                              <button 
+                                disabled={actionLoading}
+                                onClick={() => handleUpdateStatus(selectedRes.id, 'rejected')} 
+                                className="w-full bg-red-600/40 border border-red-500/50 text-red-300 py-4 rounded-xl font-black hover:bg-red-600/60 transition flex items-center justify-center gap-2 uppercase text-sm disabled:opacity-50"
+                              >
                                   <HiXCircle className="text-xl" /> Rejeter Paiement
                               </button>
                           </>
@@ -384,10 +431,11 @@ export default function AdminDashboard() {
                                   Action déjà effectuée
                               </div>
                               <button 
+                                  disabled={actionLoading}
                                   onClick={() => handleUpdateStatus(selectedRes.id, selectedRes.status)}
-                                  className="w-full glass-card border border-white/20 text-accent py-3 rounded-xl font-bold hover:border-accent/50 transition text-xs uppercase"
+                                  className="w-full glass-card border border-white/20 text-accent py-3 rounded-xl font-bold hover:border-accent/50 transition text-xs uppercase disabled:opacity-50"
                               >
-                                  Mettre à jour le message uniquement
+                                  {actionLoading ? <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin mx-auto" /> : "Mettre à jour le message uniquement"}
                               </button>
                           </div>
                       )}

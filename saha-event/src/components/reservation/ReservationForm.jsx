@@ -8,7 +8,7 @@ import FieldUI from '../ui/FieldUI'
 
 const EVENT_TYPES = ["Mariage", "Anniversaire", "Conférence", "Soirée", "Autre"]
 
-export default function ReservationForm({ salleId, pricePerDay, capacity }) {
+export default function ReservationForm({ salleId, pricePerDay, pricePerGuest = 0, capacity }) {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
@@ -20,6 +20,9 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
     guests: '',
     notes: ''
   })
+
+  const guestsCount = parseInt(formData.guests) || 0
+  const totalPrice = parseFloat(pricePerDay) + (guestsCount * parseFloat(pricePerGuest))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,9 +40,9 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
           client_id: user.id,
           event_type: formData.eventType,
           event_date: formData.date,
-          guests_count: parseInt(formData.guests),
+          guests_count: guestsCount,
           notes: formData.notes,
-          total_price: pricePerDay,
+          total_price: totalPrice,
           status: 'pending'
         })
 
@@ -110,6 +113,15 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
         onChange={(e) => setFormData({...formData, guests: e.target.value})}
       />
 
+      {pricePerGuest > 0 && formData.guests && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-xl animate-fade-in">
+          <Users size={14} className="text-accent" />
+          <p className="text-[10px] font-bold text-accent uppercase tracking-wider">
+            + {guestsCount * pricePerGuest} DA pour les invités ({pricePerGuest} DA/pers.)
+          </p>
+        </div>
+      )}
+
       <FieldUI 
         label="Notes Particulières"
         type="textarea"
@@ -119,11 +131,23 @@ export default function ReservationForm({ salleId, pricePerDay, capacity }) {
         onChange={(e) => setFormData({...formData, notes: e.target.value})}
       />
 
-      <div className="pt-6 border-t border-white/5 mt-8">
-        <div className="flex justify-between items-end mb-6">
+      <div className="pt-6 border-t border-white/5 mt-8 space-y-4">
+        <div className="flex justify-between items-center text-sm font-medium">
+          <span className="text-text-light/50">Prix de Base</span>
+          <span className="text-white">{pricePerDay} DA</span>
+        </div>
+        
+        {guestsCount > 0 && pricePerGuest > 0 && (
+          <div className="flex justify-between items-center text-sm font-medium">
+            <span className="text-text-light/50">Frais Invités ({guestsCount} × {pricePerGuest} DA)</span>
+            <span className="text-accent">+ {guestsCount * pricePerGuest} DA</span>
+          </div>
+        )}
+
+        <div className="pt-4 border-t border-white/10 flex justify-between items-end mb-6">
           <div>
-            <p className="text-[10px] font-black text-text-light/30 uppercase tracking-[0.2em] mb-1">Total Estimé</p>
-            <p className="text-3xl font-black text-white">{pricePerDay} <span className="text-accent text-sm ml-1 uppercase">DA</span></p>
+            <p className="text-[10px] font-black text-text-light/30 uppercase tracking-[0.2em] mb-1">Total à payer</p>
+            <p className="text-4xl font-black text-white">{totalPrice} <span className="text-accent text-sm ml-1 uppercase">DA</span></p>
           </div>
           <p className="text-[10px] font-bold text-text-light/30 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">TVA Incluse</p>
         </div>

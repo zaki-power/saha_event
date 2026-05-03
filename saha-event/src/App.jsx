@@ -14,6 +14,7 @@ import SalleDetail from './pages/SalleDetail'
 import Dashboard from './pages/Dashboard'
 import MyReservations from './pages/MyReservations'
 import AdminDashboard from './pages/AdminDashboard'
+import AddSalle from './pages/AddSalle'
 
 function AppContent() {
   const location = useLocation()
@@ -22,6 +23,7 @@ function AppContent() {
   const hideFooterPaths = [
     '/contact',
     '/dashboard/reservations',
+    '/dashboard/add-salle',
     '/admin' // Usually admin panels also don't have a public footer
   ]
 
@@ -44,6 +46,9 @@ function AppContent() {
         } />
         <Route path="/dashboard/reservations" element={
           <ProtectedRoute><MyReservations /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/add-salle" element={
+          <AdminRoute><AddSalle /></AdminRoute>
         } />
         <Route path="/admin" element={
           <AdminRoute><AdminDashboard /></AdminRoute>
