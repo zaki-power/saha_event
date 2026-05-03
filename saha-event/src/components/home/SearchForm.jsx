@@ -59,7 +59,7 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
       >
         <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-1 items-stretch">
           {/* WILAYA */}
-          <div className="lg:col-span-6 p-1">
+          <div className="lg:col-span-4 p-1">
             <InputWrapper label="Wilaya" icon={MapPin} fieldName="wilaya">
               <select 
                 className={selectStyles}
@@ -79,8 +79,29 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
 
           <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
 
-          {/* INVITÉS */}
+          {/* TYPE */}
           <div className="lg:col-span-3 p-1">
+            <InputWrapper label="Type" icon={CalendarIcon} fieldName="type">
+              <select 
+                className={selectStyles}
+                value={searchParams.type}
+                onFocus={() => setFocusedField('type')}
+                onBlur={() => setFocusedField(null)}
+                onChange={(e) => setSearchParams({...searchParams, type: e.target.value})}
+              >
+                <option value="" className="bg-primary text-text-light">Tous les types</option>
+                {EVENT_TYPES.map(t => <option key={t} value={t} className="bg-primary text-text-light">{t}</option>)}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-light/30">
+                <ChevronDown size={14} />
+              </div>
+            </InputWrapper>
+          </div>
+
+          <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
+
+          {/* INVITÉS */}
+          <div className="lg:col-span-2 p-1">
             <InputWrapper label="Invités" icon={Users} fieldName="guests">
               <input 
                 type="number"

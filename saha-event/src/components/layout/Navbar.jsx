@@ -129,8 +129,12 @@ export default function Navbar() {
                   <ShieldCheck size={18} />
                   <span>Panel Admin</span>
                 </Link>
-                <Link to="/" className="px-4 py-2 text-text-light/70 hover:text-white transition-all text-sm font-medium">
-                  Voir le site
+                <Link 
+                  to="/dashboard/add-salle" 
+                  className="flex items-center space-x-2 px-4 py-2 text-accent hover:bg-white/5 rounded-xl transition-all text-sm font-bold uppercase tracking-wider"
+                >
+                  <HiPlusCircle size={18} />
+                  <span>Ajouter une Salle</span>
                 </Link>
               </>
             )}

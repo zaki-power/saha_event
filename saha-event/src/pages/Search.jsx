@@ -27,7 +27,9 @@ const WILAYAS = [
   "54 Timimoun", "55 Touggourt", "56 Djanet", "57 In Salah", "58 In Guezzam"
 ]
 
-const AMENITIES = ["WiFi", "Parking", "Climatisation", "Catering", "Scène", "Sonorisation"]
+const AMENITIES = [
+  "WiFi", "Climatisation", "Parking", "Catering", "Scène", "Sonorisation", "Sécurité", "Espace extérieur", "Cuisine équipée"
+]
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -37,17 +39,20 @@ export default function Search() {
 
   // Local state for filters
   const [filters, setFilters] = useState({
-    wilaya: searchParams.get('wilaya') || '',
+    wilaya: searchParams.get('wilaya') || searchParams.get('city') || '',
     type: searchParams.get('type') || '',
     minPrice: searchParams.get('minPrice') || '',
     maxPrice: searchParams.get('maxPrice') || '',
-    capacity: searchParams.get('capacity') || ''
+    capacity: searchParams.get('capacity') || searchParams.get('guests') || '',
+    amenities: searchParams.get('amenities')?.split(',') || []
   })
+  
+  const [sortBy, setSortBy] = useState('newest')
 
   useEffect(() => {
     fetchSalles()
     window.scrollTo(0, 0)
-  }, [searchParams])
+  }, [searchParams, sortBy])
 
   const fetchSalles = async () => {
     setLoading(true)
@@ -59,12 +64,27 @@ export default function Search() {
       const type = searchParams.get('type')
       const minPrice = searchParams.get('minPrice')
       const maxPrice = searchParams.get('maxPrice')
+      const amenities = searchParams.get('amenities')?.split(',')
 
-      if (city) query = query.ilike('city', `%${city}%`)
+      if (city) {
+        // Strip the number from "16 Alger" if it exists for better matching
+        const cleanCity = city.includes(' ') ? city.split(' ').slice(1).join(' ') : city
+        query = query.ilike('city', `%${cleanCity}%`)
+      }
+      
       if (guests) query = query.gte('capacity', parseInt(guests))
       if (type) query = query.contains('event_types', [type])
       if (minPrice) query = query.gte('price_per_day', parseInt(minPrice))
       if (maxPrice) query = query.lte('price_per_day', parseInt(maxPrice))
+      if (amenities && amenities.length > 0 && amenities[0] !== '') {
+        query = query.contains('amenities', amenities)
+      }
+
+      // Sorting
+      if (sortBy === 'price_asc') query = query.order('price_per_day', { ascending: true })
+      else if (sortBy === 'price_desc') query = query.order('price_per_day', { ascending: false })
+      else if (sortBy === 'capacity_desc') query = query.order('capacity', { ascending: false })
+      else query = query.order('created_at', { ascending: false })
 
       const { data, error } = await query
       if (error) throw error
@@ -79,14 +99,27 @@ export default function Search() {
   const applyFilters = () => {
     const params = {}
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params[key] = value
+      if (Array.isArray(value)) {
+        if (value.length > 0) params[key] = value.join(',')
+      } else if (value) {
+        params[key] = value
+      }
     })
     setSearchParams(params)
     if (window.innerWidth < 1024) setShowFilters(false)
   }
 
+  const toggleAmenity = (amenity) => {
+    setFilters(prev => {
+      const newAmenities = prev.amenities.includes(amenity)
+        ? prev.amenities.filter(a => a !== amenity)
+        : [...prev.amenities, amenity]
+      return { ...prev, amenities: newAmenities }
+    })
+  }
+
   const clearFilters = () => {
-    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: ''})
+    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: '', amenities: []})
     setSearchParams({})
   }
 
@@ -120,11 +153,15 @@ export default function Search() {
             </div>
             
             <div className="relative hidden md:block">
-              <select className="appearance-none bg-white/5 border border-white/10 text-white pl-5 pr-12 py-3.5 rounded-2xl font-bold text-sm focus:outline-none focus:border-accent transition-all cursor-pointer">
-                <option>Plus récents</option>
-                <option>Prix croissant</option>
-                <option>Prix décroissant</option>
-                <option>Capacité max</option>
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none bg-white/5 border border-white/10 text-white pl-5 pr-12 py-3.5 rounded-2xl font-bold text-sm focus:outline-none focus:border-accent transition-all cursor-pointer"
+              >
+                <option value="newest">Plus récents</option>
+                <option value="price_asc">Prix croissant</option>
+                <option value="price_desc">Prix décroissant</option>
+                <option value="capacity_desc">Capacité max</option>
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-light/30 pointer-events-none" size={16} />
             </div>
@@ -143,7 +180,7 @@ export default function Search() {
                 {showFilters && (
                   <button onClick={() => setShowFilters(false)} className="lg:hidden text-text-light/50"><FilterX size={24} /></button>
                 )}
-                {(filters.wilaya || filters.capacity || filters.minPrice) && (
+                {(filters.wilaya || filters.capacity || filters.minPrice || filters.amenities.length > 0) && (
                   <button onClick={clearFilters} className="text-xs font-bold text-accent hover:underline uppercase tracking-widest">Effacer</button>
                 )}
               </div>
@@ -210,6 +247,8 @@ export default function Search() {
                       <label key={amenity} className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group">
                         <input 
                           type="checkbox" 
+                          checked={filters.amenities.includes(amenity)}
+                          onChange={() => toggleAmenity(amenity)}
                           className="w-5 h-5 rounded-lg border-white/10 bg-white/5 text-accent focus:ring-accent focus:ring-offset-0" 
                         />
                         <span className="text-sm font-bold text-text-light/60 group-hover:text-white transition-colors">{amenity}</span>

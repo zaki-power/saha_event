@@ -132,8 +132,15 @@ export default function SalleDetail() {
                   />
                 </AnimatePresence>
                 
-                <div className="absolute top-6 left-6 flex items-center gap-1.5 bg-accent text-primary px-3 py-1.5 rounded-xl font-black text-sm shadow-xl">
-                  {salle.price_per_day} DA <span className="text-[10px] font-bold opacity-70">/ JOUR</span>
+                <div className="absolute top-6 left-6 flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 bg-accent text-primary px-3 py-1.5 rounded-xl font-black text-sm shadow-xl">
+                    {salle.price_per_day || 0} DA <span className="text-[10px] font-bold opacity-70">/ BASE</span>
+                  </div>
+                  {salle.price_per_guest > 0 && (
+                    <div className="flex items-center gap-1.5 bg-primary/80 backdrop-blur-md text-accent border border-accent/20 px-3 py-1.5 rounded-xl font-black text-[10px] shadow-xl">
+                      + {salle.price_per_guest} DA <span className="opacity-70">/ INVITÉ</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 

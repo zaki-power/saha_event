@@ -22,7 +22,9 @@ export default function ReservationForm({ salleId, pricePerDay, pricePerGuest = 
   })
 
   const guestsCount = parseInt(formData.guests) || 0
-  const totalPrice = parseFloat(pricePerDay) + (guestsCount * parseFloat(pricePerGuest))
+  const basePrice = parseFloat(pricePerDay) || 0
+  const guestFee = parseFloat(pricePerGuest) || 0
+  const totalPrice = basePrice + (guestsCount * guestFee)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
