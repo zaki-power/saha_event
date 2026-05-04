@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -49,6 +49,30 @@ export default function Search() {
   })
   
   const [sortBy, setSortBy] = useState('newest')
+  const [showSortDropdown, setShowSortDropdown] = useState(false)
+  const [showWilayaDropdown, setShowWilayaDropdown] = useState(false)
+  const sortRef = useRef(null)
+  const wilayaRef = useRef(null)
+
+  const SORT_OPTIONS = [
+    { label: 'Plus récents', value: 'newest' },
+    { label: 'Prix croissant', value: 'price_asc' },
+    { label: 'Prix décroissant', value: 'price_desc' },
+    { label: 'Capacité max', value: 'capacity_desc' }
+  ]
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortRef.current && !sortRef.current.contains(event.target)) {
+        setShowSortDropdown(false)
+      }
+      if (wilayaRef.current && !wilayaRef.current.contains(event.target)) {
+        setShowWilayaDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Update browser tab title
   useEffect(() => {
@@ -62,41 +86,68 @@ export default function Search() {
     window.scrollTo(0, 0)
   }, [searchParams, sortBy])
 
+  // ... (keep imports and constants same)
+
   const fetchSalles = async () => {
     setLoading(true)
     try {
-      let query = supabase.from('salles').select('*').eq('available', true)
+      // Start with a base query that includes both explicitly available and unset (NULL) salles
+      let query = supabase.from('salles').select('*')
+      
+      // Use OR to include both true and null (for manual entries)
+      query = query.or('available.eq.true,available.is.null')
 
-      const city = searchParams.get('city') || searchParams.get('wilaya')
-      const guests = searchParams.get('guests') || searchParams.get('capacity')
+      // Use searchParams to drive the query for URL consistency
+      const city = searchParams.get('wilaya') || searchParams.get('city')
+      const guests = searchParams.get('capacity') || searchParams.get('guests')
       const type = searchParams.get('type')
       const minPrice = searchParams.get('minPrice')
       const maxPrice = searchParams.get('maxPrice')
-      const amenities = searchParams.get('amenities')?.split(',')
+      const amenities = searchParams.get('amenities')?.split(',').filter(a => a !== '')
       const q = searchParams.get('q')
 
-      if (city) {
-        // Strip the number from "16 Alger" if it exists for better matching
-        const cleanCity = city.includes(' ') ? city.split(' ').slice(1).join(' ') : city
+      // 1. Fixed Wilaya Logic: Strip "16 " from "16 Alger"
+      if (city && city.trim() !== '') {
+        const cleanCity = city.replace(/^\d+\s*/, '').trim()
         query = query.ilike('city', `%${cleanCity}%`)
       }
       
-      if (guests) query = query.gte('capacity', parseInt(guests))
-      if (type) query = query.contains('event_types', [type])
-      if (minPrice) query = query.gte('price_per_day', parseInt(minPrice))
-      if (maxPrice) query = query.lte('price_per_day', parseInt(maxPrice))
-      if (amenities && amenities.length > 0 && amenities[0] !== '') {
+      // 2. Numeric filters
+      if (guests) {
+        const numGuests = parseInt(guests)
+        if (!isNaN(numGuests)) query = query.gte('capacity', numGuests)
+      }
+      if (minPrice) {
+        const numMin = parseInt(minPrice)
+        if (!isNaN(numMin)) query = query.gte('price_per_day', numMin)
+      }
+      if (maxPrice) {
+        const numMax = parseInt(maxPrice)
+        if (!isNaN(numMax)) query = query.lte('price_per_day', numMax)
+      }
+      
+      // 3. Array filters (Amenities & Event Types)
+      if (type && type !== '') {
+        query = query.contains('event_types', [type])
+      }
+      if (amenities && amenities.length > 0) {
         query = query.contains('amenities', amenities)
       }
-      if (q) {
+
+      // 4. Text Search
+      if (q && q.trim() !== '') {
         query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%,city.ilike.%${q}%`)
       }
 
-      // Sorting
-      if (sortBy === 'price_asc') query = query.order('price_per_day', { ascending: true })
-      else if (sortBy === 'price_desc') query = query.order('price_per_day', { ascending: false })
-      else if (sortBy === 'capacity_desc') query = query.order('capacity', { ascending: false })
-      else query = query.order('created_at', { ascending: false })
+      // 5. Sorting
+      const sortMap = {
+        price_asc: { column: 'price_per_day', options: { ascending: true } },
+        price_desc: { column: 'price_per_day', options: { ascending: false } },
+        capacity_desc: { column: 'capacity', options: { ascending: false } },
+        newest: { column: 'created_at', options: { ascending: false } }
+      }
+      const activeSort = sortMap[sortBy] || sortMap.newest
+      query = query.order(activeSort.column, activeSort.options)
 
       const { data, error } = await query
       if (error) throw error
@@ -104,19 +155,23 @@ export default function Search() {
     } catch (err) {
       console.error('Error fetching salles:', err)
     } finally {
-      setTimeout(() => setLoading(false), 500)
+      // Small delay for smooth transition
+      setTimeout(() => setLoading(false), 300)
     }
   }
 
   const applyFilters = () => {
-    const params = {}
+    const params = new URLSearchParams()
+    
+    // Cleanly append only active filters to URL
     Object.entries(filters).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        if (value.length > 0) params[key] = value.join(',')
-      } else if (value) {
-        params[key] = value
+      if (Array.isArray(value) && value.length > 0) {
+        params.append(key, value.join(','))
+      } else if (value && !Array.isArray(value)) {
+        params.append(key, value)
       }
     })
+
     setSearchParams(params)
     if (window.innerWidth < 1024) setShowFilters(false)
   }
@@ -170,18 +225,38 @@ export default function Search() {
               <button className="p-2 text-text-light/30 hover:text-text-light transition-colors"><ListIcon size={20} /></button>
             </div>
             
-            <div className="relative hidden md:block">
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none bg-white/5 border border-white/10 text-white pl-5 pr-12 py-3.5 rounded-2xl font-bold text-sm focus:outline-none focus:border-accent transition-all cursor-pointer"
+            <div className="relative hidden md:block" ref={sortRef}>
+              <button 
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                className="flex items-center gap-3 bg-white/5 border border-white/10 text-white px-6 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/10 transition-all cursor-pointer min-w-[180px] justify-between"
               >
-                <option value="newest">Plus récents</option>
-                <option value="price_asc">Prix croissant</option>
-                <option value="price_desc">Prix décroissant</option>
-                <option value="capacity_desc">Capacité max</option>
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-light/30 pointer-events-none" size={16} />
+                <span>{SORT_OPTIONS.find(opt => opt.value === sortBy)?.label}</span>
+                <ChevronDown className={`transition-transform duration-300 ${showSortDropdown ? 'rotate-180' : ''}`} size={16} />
+              </button>
+              
+              <AnimatePresence>
+                {showSortDropdown && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full right-0 mt-2 w-56 bg-primary/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSortBy(option.value)
+                          setShowSortDropdown(false)
+                        }}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold transition-colors ${sortBy === option.value ? 'text-accent bg-accent/5' : 'text-text-light/70 hover:text-white hover:bg-white/5'}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

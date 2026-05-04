@@ -87,7 +87,7 @@ export default function Home() {
       const { data, error } = await supabase
         .from('salles')
         .select('*')
-        .eq('available', true)
+        .or('available.eq.true,available.is.null')
         .limit(6)
       
       if (error) throw error
@@ -114,16 +114,16 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-primary selection:bg-accent/30">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-[100dvh] flex items-center justify-center overflow-hidden z-40 ">
         {/* Dynamic Background */}
         <div className="absolute inset-0 bg-primary">
           <motion.div 
             style={{ y: y1 }}
             className="absolute inset-0 opacity-40"
           >
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-mid rounded-full blur-[120px] animate-pulse"></div>
-            <div className="absolute bottom-[10%] right-[-5%] w-[35%] h-[35%] bg-accent-pink rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-            <div className="absolute top-[40%] right-[20%] w-[25%] h-[25%] bg-accent rounded-full blur-[80px] opacity-20"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] lg:w-[40%] h-[40%] bg-primary-mid rounded-full blur-[120px] animate-pulse"></div>
+            <div className="absolute bottom-[10%] right-[-5%] w-[50%] h-[50%] lg:w-[35%] h-[35%] bg-accent-pink rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-[40%] right-[20%] w-[35%] h-[35%] lg:w-[25%] h-[25%] bg-accent rounded-full blur-[80px] opacity-20"></div>
           </motion.div>
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
         </div>
@@ -134,27 +134,30 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
             style={{ opacity }}
+            className="mb-8 lg:mb-12"
           >
             <motion.span 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-accent text-sm font-bold tracking-widest uppercase mb-6"
+              className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-accent text-xs lg:text-sm font-bold tracking-[0.2em] uppercase mb-6"
             >
               La référence en Algérie
             </motion.span>
             
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-white leading-tight mb-8">
-              Célébrez des Moments <br />
+            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white leading-[1.1] mb-6 lg:mb-8">
+              Célébrez des Moments <br className="hidden sm:block" />
               <span className="gradient-text">Inoubliables</span>
             </h1>
             
-            <p className="text-text-light/60 text-lg lg:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-text-light/60 text-base lg:text-xl max-w-2xl mx-auto leading-relaxed px-4">
               Découvrez et réservez les plus belles salles de réception à travers les 58 wilayas pour vos mariages, conférences et événements privés.
             </p>
           </motion.div>
 
-          <SearchForm onSubmit={handleSearch} variant="hero" />
+          <div className="px-2 sm:px-4">
+            <SearchForm onSubmit={handleSearch} variant="hero" />
+          </div>
 
           <motion.div 
             initial={{ opacity: 0 }}
@@ -174,7 +177,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-24 bg-primary relative overflow-hidden">
+      <section className="py-24 bg-primary relative overflow-hidden z-30">
         <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <motion.h2 

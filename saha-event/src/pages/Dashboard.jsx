@@ -67,7 +67,7 @@ export default function Dashboard() {
       const { data: salleData } = await supabase
         .from('salles')
         .select('*')
-        .eq('available', true)
+        .or('available.eq.true,available.is.null')
         .limit(3)
       setSuggestedSalles(salleData || [])
 

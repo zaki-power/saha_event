@@ -10,7 +10,8 @@ export default function SalleCard({ salle, searchGuests }) {
   const guestFee = parseFloat(price_per_guest) || 0
   const totalPrice = basePrice + (guestsCount * guestFee)
 
-  const mainImage = Array.isArray(images) ? images[0] : (images || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800')
+  const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800'
+  const mainImage = Array.isArray(images) && images.length > 0 ? images[0] : (images || PLACEHOLDER_IMAGE)
 
   return (
     <motion.div
