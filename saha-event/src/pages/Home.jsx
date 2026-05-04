@@ -101,10 +101,12 @@ export default function Home() {
 
   const handleSearch = (params) => {
     const query = new URLSearchParams({
+      q: params.q || '',
       city: params.wilaya,
       type: params.type,
       date: params.date,
-      guests: params.guests
+      guests: params.guests,
+      amenities: params.amenities || ''
     }).toString()
     navigate(`/search?${query}`)
   }

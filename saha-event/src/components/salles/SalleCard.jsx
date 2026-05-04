@@ -2,8 +2,13 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MapPin, Users, Star, ArrowRight } from 'lucide-react'
 
-export default function SalleCard({ salle }) {
-  const { id, name, city, price_per_day, capacity, images, rating = 4.8 } = salle
+export default function SalleCard({ salle, searchGuests }) {
+  const { id, name, city, price_per_day, price_per_guest = 0, capacity, images, rating = 4.8 } = salle
+
+  const guestsCount = parseInt(searchGuests) || 0
+  const basePrice = parseFloat(price_per_day) || 0
+  const guestFee = parseFloat(price_per_guest) || 0
+  const totalPrice = basePrice + (guestsCount * guestFee)
 
   const mainImage = Array.isArray(images) ? images[0] : (images || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800')
 
@@ -31,9 +36,21 @@ export default function SalleCard({ salle }) {
           
           {/* Badges */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
-            <div className="bg-accent text-primary px-3 py-1.5 rounded-xl font-black text-sm shadow-lg">
-              {price_per_day} DA
+            <div className={`px-3 py-1.5 rounded-xl font-black shadow-lg transition-all duration-300 ${guestsCount > 0 ? 'bg-primary/80 backdrop-blur-md text-accent border border-accent/20 text-xs' : 'bg-accent text-primary text-sm'}`}>
+              {guestsCount > 0 ? (
+                <div className="flex flex-col items-end leading-tight">
+                  <span className="text-[8px] uppercase tracking-tighter opacity-70">Total pour {guestsCount} pers.</span>
+                  <span>{totalPrice} DA</span>
+                </div>
+              ) : (
+                <span>{price_per_day} DA</span>
+              )}
             </div>
+            {guestsCount > 0 && (
+              <div className="bg-accent text-primary px-2 py-1 rounded-lg font-black text-[10px] shadow-lg animate-fade-in">
+                Prix Spécial
+              </div>
+            )}
           </div>
 
           <div className="absolute top-4 left-4">

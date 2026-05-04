@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Search, MapPin, Calendar as CalendarIcon, Users, ArrowRight, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Search, MapPin, Calendar as CalendarIcon, Users, ArrowRight, ChevronDown, Check } from 'lucide-react'
 
 const WILAYAS = [
   "01 Adrar", "02 Chlef", "03 Laghouat", "04 Oum El Bouaghi", "05 Batna", "06 Béjaïa", "07 Biskra", "08 Béchar",
@@ -14,22 +14,50 @@ const WILAYAS = [
 ]
 
 const EVENT_TYPES = ["Mariage", "Anniversaire", "Conférence", "Soirée", "Autre"]
+const AMENITIES = ["WiFi", "Climatisation", "Parking", "Catering", "Scène", "Sonorisation", "Sécurité", "Espace extérieur", "Cuisine équipée"]
 
 export default function SearchForm({ onSubmit, variant = "hero" }) {
   const [searchParams, setSearchParams] = useState({
+    q: '',
     wilaya: '',
     type: '',
     date: '',
-    guests: ''
+    guests: '',
+    amenities: []
   })
 
   const [focusedField, setFocusedField] = useState(null)
+  const [showAmenities, setShowAmenities] = useState(false)
+  const amenitiesRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (amenitiesRef.current && !amenitiesRef.current.contains(event.target)) {
+        setShowAmenities(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSearch = (e) => {
     e.preventDefault()
+    setShowAmenities(false)
     if (onSubmit) {
-      onSubmit(searchParams)
+      onSubmit({
+        ...searchParams,
+        amenities: searchParams.amenities.join(',')
+      })
     }
+  }
+
+  const toggleAmenity = (amenity) => {
+    setSearchParams(prev => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter(a => a !== amenity)
+        : [...prev.amenities, amenity]
+    }))
   }
 
   const InputWrapper = ({ label, icon: Icon, children, fieldName }) => (
@@ -37,7 +65,7 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
       <label className="text-[10px] font-bold text-text-light/50 uppercase tracking-widest mb-1.5 ml-1 transition-colors group-focus-within:text-accent">
         {label}
       </label>
-      <div className={`relative transition-all duration-300 ${focusedField === fieldName ? 'scale-[1.02]' : ''}`}>
+      <div className={`relative transition-all duration-300 ${focusedField === fieldName || (fieldName === 'amenities' && showAmenities) ? 'scale-[1.02]' : ''}`}>
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light/40 group-focus-within:text-accent transition-colors">
           <Icon size={18} />
         </div>
@@ -46,8 +74,8 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
     </div>
   )
 
-  const selectStyles = "w-full input-glass pl-12 pr-10 py-3.5 appearance-none cursor-pointer hover:bg-white/10"
-  const inputStyles = "w-full input-glass pl-12 pr-4 py-3.5 focus:bg-white/10"
+  const selectStyles = "w-full input-glass pl-12 pr-10 py-3.5 appearance-none cursor-pointer hover:bg-white/10 transition-all"
+  const inputStyles = "w-full input-glass pl-12 pr-4 py-3.5 focus:bg-white/10 transition-all"
 
   if (variant === "hero") {
     return (
@@ -55,11 +83,28 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="glass-card-lg max-w-4xl mx-auto p-3 shadow-2xl shadow-black/50 border border-white/10 ring-1 ring-white/5"
+        className="glass-card-lg max-w-6xl mx-auto p-3 shadow-2xl shadow-black/50 border border-white/10 ring-1 ring-white/5"
       >
         <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-1 items-stretch">
+          {/* SEARCH */}
+          <div className="lg:col-span-2.5 p-1">
+            <InputWrapper label="Recherche" icon={Search} fieldName="q">
+              <input 
+                type="text"
+                placeholder="Nom, palais..."
+                className={inputStyles}
+                onFocus={() => setFocusedField('q')}
+                onBlur={() => setFocusedField(null)}
+                value={searchParams.q}
+                onChange={(e) => setSearchParams({...searchParams, q: e.target.value})}
+              />
+            </InputWrapper>
+          </div>
+
+          <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
+
           {/* WILAYA */}
-          <div className="lg:col-span-4 p-1">
+          <div className="lg:col-span-2 p-1">
             <InputWrapper label="Wilaya" icon={MapPin} fieldName="wilaya">
               <select 
                 className={selectStyles}
@@ -68,7 +113,7 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
                 onBlur={() => setFocusedField(null)}
                 onChange={(e) => setSearchParams({...searchParams, wilaya: e.target.value})}
               >
-                <option value="" className="bg-primary text-text-light">Toutes les Wilayas</option>
+                <option value="" className="bg-primary text-text-light">Toutes</option>
                 {WILAYAS.map(w => <option key={w} value={w} className="bg-primary text-text-light">{w}</option>)}
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-light/30">
@@ -79,8 +124,57 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
 
           <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
 
+          {/* COMMODITÉS */}
+          <div className="lg:col-span-2.5 p-1 relative" ref={amenitiesRef}>
+            <InputWrapper label="Commodités" icon={ArrowRight} fieldName="amenities">
+              <button
+                type="button"
+                className={`${selectStyles} text-left overflow-hidden whitespace-nowrap ${showAmenities ? 'bg-white/10 border-accent/50' : ''}`}
+                onClick={() => setShowAmenities(!showAmenities)}
+              >
+                {searchParams.amenities.length > 0 
+                  ? <span className="text-accent">{searchParams.amenities.length} sélectionné(s)</span> 
+                  : <span className="text-text-light/40">Sélectionner</span>}
+              </button>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-light/30">
+                <ChevronDown size={14} className={`transition-transform duration-300 ${showAmenities ? 'rotate-180' : ''}`} />
+              </div>
+            </InputWrapper>
+            
+            <AnimatePresence>
+              {showAmenities && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-[calc(100%+8px)] left-0 right-0 p-4 bg-primary/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 max-h-64 overflow-y-auto custom-scrollbar"
+                >
+                  <div className="grid grid-cols-1 gap-1">
+                    {AMENITIES.map(amenity => (
+                      <label key={amenity} className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all group ${searchParams.amenities.includes(amenity) ? 'bg-accent/10' : 'hover:bg-white/5'}`}>
+                        <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${searchParams.amenities.includes(amenity) ? 'bg-accent border-accent' : 'border-white/10 group-hover:border-white/20'}`}>
+                          {searchParams.amenities.includes(amenity) && <Check size={12} className="text-primary stroke-[4]" />}
+                        </div>
+                        <input 
+                          type="checkbox"
+                          className="hidden"
+                          checked={searchParams.amenities.includes(amenity)}
+                          onChange={() => toggleAmenity(amenity)}
+                        />
+                        <span className={`text-xs font-bold transition-colors ${searchParams.amenities.includes(amenity) ? 'text-white' : 'text-text-light/40 group-hover:text-text-light/70'}`}>{amenity}</span>
+                      </label>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+
+          <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
+
           {/* TYPE */}
-          <div className="lg:col-span-3 p-1">
+          <div className="lg:col-span-1.5 p-1">
             <InputWrapper label="Type" icon={CalendarIcon} fieldName="type">
               <select 
                 className={selectStyles}
@@ -89,23 +183,20 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
                 onBlur={() => setFocusedField(null)}
                 onChange={(e) => setSearchParams({...searchParams, type: e.target.value})}
               >
-                <option value="" className="bg-primary text-text-light">Tous les types</option>
+                <option value="" className="bg-primary text-text-light">Tous</option>
                 {EVENT_TYPES.map(t => <option key={t} value={t} className="bg-primary text-text-light">{t}</option>)}
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-light/30">
-                <ChevronDown size={14} />
-              </div>
             </InputWrapper>
           </div>
 
           <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
 
           {/* INVITÉS */}
-          <div className="lg:col-span-2 p-1">
+          <div className="lg:col-span-1 p-1">
             <InputWrapper label="Invités" icon={Users} fieldName="guests">
               <input 
                 type="number"
-                placeholder="Nombre"
+                placeholder="Nbr"
                 className={inputStyles}
                 onFocus={() => setFocusedField('guests')}
                 onBlur={() => setFocusedField(null)}
@@ -118,7 +209,7 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
           <div className="hidden lg:flex w-px h-10 bg-white/10 self-center mx-1"></div>
 
           {/* SUBMIT */}
-          <div className="lg:col-span-3 p-1 flex items-end">
+          <div className="lg:col-span-2 p-1 flex items-end">
             <motion.button 
               whileHover={{ scale: 1.02, backgroundColor: '#facc15' }}
               whileTap={{ scale: 0.98 }}
@@ -133,6 +224,8 @@ export default function SearchForm({ onSubmit, variant = "hero" }) {
       </motion.div>
     )
   }
+
+
 
   // Compact variant (filter sidebar)
   if (variant === "compact") {

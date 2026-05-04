@@ -44,10 +44,18 @@ export default function Search() {
     minPrice: searchParams.get('minPrice') || '',
     maxPrice: searchParams.get('maxPrice') || '',
     capacity: searchParams.get('capacity') || searchParams.get('guests') || '',
-    amenities: searchParams.get('amenities')?.split(',') || []
+    amenities: searchParams.get('amenities')?.split(',') || [],
+    q: searchParams.get('q') || ''
   })
   
   const [sortBy, setSortBy] = useState('newest')
+
+  // Update browser tab title
+  useEffect(() => {
+    if (!loading) {
+      document.title = `${salles.length} ${salles.length > 1 ? 'Espaces' : 'Espace'} - Saha Event`
+    }
+  }, [salles, loading])
 
   useEffect(() => {
     fetchSalles()
@@ -65,6 +73,7 @@ export default function Search() {
       const minPrice = searchParams.get('minPrice')
       const maxPrice = searchParams.get('maxPrice')
       const amenities = searchParams.get('amenities')?.split(',')
+      const q = searchParams.get('q')
 
       if (city) {
         // Strip the number from "16 Alger" if it exists for better matching
@@ -78,6 +87,9 @@ export default function Search() {
       if (maxPrice) query = query.lte('price_per_day', parseInt(maxPrice))
       if (amenities && amenities.length > 0 && amenities[0] !== '') {
         query = query.contains('amenities', amenities)
+      }
+      if (q) {
+        query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%,city.ilike.%${q}%`)
       }
 
       // Sorting
@@ -119,7 +131,7 @@ export default function Search() {
   }
 
   const clearFilters = () => {
-    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: '', amenities: []})
+    setFilters({wilaya: '', type: '', minPrice: '', maxPrice: '', capacity: '', amenities: [], q: ''})
     setSearchParams({})
   }
 
@@ -131,10 +143,16 @@ export default function Search() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
           <div>
             <h1 className="text-4xl lg:text-5xl font-black text-white mb-2">
-              Trouver un <span className="gradient-text">Espace</span>
+              {loading ? (
+                <span>Recherche <span className="gradient-text">en cours...</span></span>
+              ) : (
+                <>
+                  {salles.length} <span className="gradient-text">{salles.length > 1 ? 'Espaces Trouvés' : 'Espace Trouvé'}</span>
+                </>
+              )}
             </h1>
             <p className="text-text-light/40 font-bold uppercase tracking-widest text-xs">
-              {loading ? 'Recherche en cours...' : `${salles.length} Résultats trouvés`}
+              {loading ? 'Nous explorons nos plus beaux palais' : `Basé sur vos critères de sélection`}
             </p>
           </div>
           
@@ -186,6 +204,22 @@ export default function Search() {
               </div>
 
               <div className="space-y-8">
+                {/* Keyword Search */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1">Recherche</label>
+                  <div className="relative">
+                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light/30" size={18} />
+                    <input 
+                      type="text"
+                      placeholder="Nom, commodité..."
+                      className="w-full input-glass pl-12 pr-4 py-3.5"
+                      value={filters.q}
+                      onChange={(e) => setFilters({...filters, q: e.target.value})}
+                      onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
+                    />
+                  </div>
+                </div>
+
                 {/* Wilaya */}
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-text-light/40 uppercase tracking-[0.2em] ml-1">Wilaya</label>
@@ -296,7 +330,10 @@ export default function Search() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                     >
-                      <SalleCard salle={salle} />
+                      <SalleCard 
+                        salle={salle} 
+                        searchGuests={searchParams.get('guests') || searchParams.get('capacity')} 
+                      />
                     </motion.div>
                   ))}
                 </motion.div>
