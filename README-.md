@@ -2,42 +2,6 @@
 
 A modern event space reservation platform built with React, Vite, Tailwind CSS, and Supabase.
 
-## Deployment on Vercel
-
-To deploy this project on Vercel, follow these steps:
-
-1. Push your code to GitHub.
-2. Create a new project on Vercel and import your repository.
-3. Configure environment variables:
-   - `VITE_SUPABASE_URL`: your Supabase project URL.
-   - `VITE_SUPABASE_ANON_KEY`: your Supabase anonymous API key.
-4. Build settings: Vercel should automatically detect Vite, but if not, use the following:
-   - Build command: `npm run build`
-   - Output directory: `dist`
-   - Install command: `npm install`
-
-## Features
-
-- **User Authentication:** users can sign up and log in using Supabase Auth.
-- **Reservation Workflow:** users can book halls, and administrators can approve or reject requests.
-- **CCP Payment Integration:** users receive CCP payment details after approval and can upload PDF receipts.
-- **Admin Dashboard:** administrators can manage reservations and feedback.
-- **Modern UI:** the interface uses Tailwind CSS and modern visual effects.
-
-## Development
-
-Run the following commands to work on the project locally:
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-```
 
 ## Mapping of Theme and Data Model
 
